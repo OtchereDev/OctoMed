@@ -1,6 +1,16 @@
-import { Link } from '@remix-run/react'
+import { Link, MetaFunction } from '@remix-run/react'
 import { useState } from 'react'
 import ForgotPasswordForm from '~/components/auth/ForgotPasswordForm'
+
+export const meta: MetaFunction = () => [
+  {
+    title: 'Forgot Password - OctoMed | Your AI Health Assistant',
+  },
+  {
+    name: 'description',
+    content: 'Your AI Health Assistant',
+  },
+]
 
 export default function ForgotPassword() {
   const [success, setSuccess] = useState(false)

@@ -1,7 +1,17 @@
-import { Link } from '@remix-run/react'
+import { Link, MetaFunction } from '@remix-run/react'
 import Input from '~/components/shared/Input'
 import Stepper from '~/components/shared/Stepper'
 import { BackArrow, Person } from '~/components/shared/icons'
+
+export const meta: MetaFunction = () => [
+  {
+    title: 'Onboarding - OctoMed | Your AI Health Assistant',
+  },
+  {
+    name: 'description',
+    content: 'Your AI Health Assistant',
+  },
+]
 
 export default function Biodata() {
   return (

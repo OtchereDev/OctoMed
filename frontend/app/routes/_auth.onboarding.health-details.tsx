@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import { Link, MetaFunction } from '@remix-run/react'
 import { BackArrow } from '~/components/shared/icons'
 import Stepper from '~/components/shared/Stepper'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -29,6 +29,16 @@ const HealthConditions = [
   'Cystic Fibrosis',
   'HIV Positive',
   'Malignant Cancer',
+]
+
+export const meta: MetaFunction = () => [
+  {
+    title: 'Onboarding - OctoMed | Your AI Health Assistant',
+  },
+  {
+    name: 'description',
+    content: 'Your AI Health Assistant',
+  },
 ]
 
 export default function HealthDetails() {

@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import { Link, MetaFunction } from '@remix-run/react'
 import Onboard from '~/assets/images/onboarding.png'
 import Input from '~/components/shared/Input'
 import Modal from '~/components/shared/Modal'
@@ -12,6 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+
+export const meta: MetaFunction = () => [
+  {
+    title: 'Onboarding - OctoMed | Your AI Health Assistant',
+  },
+  {
+    name: 'description',
+    content: 'Your AI Health Assistant',
+  },
+]
 
 export default function Location() {
   return (

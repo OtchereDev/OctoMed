@@ -1,5 +1,15 @@
-import { Link } from '@remix-run/react'
+import { Link, MetaFunction } from '@remix-run/react'
 import SignupForm from '~/components/auth/SignupForm'
+
+export const meta: MetaFunction = () => [
+  {
+    title: 'Login - OctoMed | Your AI Health Assistant',
+  },
+  {
+    name: 'description',
+    content: 'Your AI Health Assistant',
+  },
+]
 
 export default function Signup() {
   return (

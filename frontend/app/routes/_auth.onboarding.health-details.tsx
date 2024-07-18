@@ -1,7 +1,9 @@
-import { Link, MetaFunction } from '@remix-run/react'
+import { LoaderFunctionArgs } from '@remix-run/node'
+import { json, Link, MetaFunction, redirect } from '@remix-run/react'
 import { BackArrow } from '~/components/shared/icons'
 import Stepper from '~/components/shared/Stepper'
 import { Checkbox } from '~/components/ui/checkbox'
+import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
 
 const Allergies = [
   'Anemia',
@@ -40,6 +42,14 @@ export const meta: MetaFunction = () => [
     content: 'Your AI Health Assistant',
   },
 ]
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (await preventUnAuthorizedUser(request)) {
+    return redirect('/')
+  }
+
+  return json({})
+}
 
 export default function HealthDetails() {
   return (

@@ -1,5 +1,7 @@
-import { Link, MetaFunction } from '@remix-run/react'
+import { LoaderFunctionArgs } from '@remix-run/node'
+import { json, Link, MetaFunction, redirect } from '@remix-run/react'
 import SignupForm from '~/components/auth/SignupForm'
+import { preventLoggedInUser } from '~/lib/preventLoggedInUser'
 
 export const meta: MetaFunction = () => [
   {
@@ -10,6 +12,14 @@ export const meta: MetaFunction = () => [
     content: 'Your AI Health Assistant',
   },
 ]
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (await preventLoggedInUser(request)) {
+    return redirect('/')
+  }
+
+  return json({})
+}
 
 export default function Signup() {
   return (

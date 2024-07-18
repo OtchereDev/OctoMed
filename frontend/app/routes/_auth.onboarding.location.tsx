@@ -1,4 +1,5 @@
-import { Link, MetaFunction } from '@remix-run/react'
+import { LoaderFunctionArgs } from '@remix-run/node'
+import { Link, MetaFunction, json, redirect } from '@remix-run/react'
 import Onboard from '~/assets/images/onboarding.png'
 import Input from '~/components/shared/Input'
 import Modal from '~/components/shared/Modal'
@@ -12,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
 
 export const meta: MetaFunction = () => [
   {
@@ -22,6 +24,13 @@ export const meta: MetaFunction = () => [
     content: 'Your AI Health Assistant',
   },
 ]
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (await preventUnAuthorizedUser(request)) {
+    return redirect('/')
+  }
+
+  return json({})
+}
 
 export default function Location() {
   return (

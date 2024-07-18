@@ -1,4 +1,5 @@
-import { Outlet } from '@remix-run/react'
+import { LoaderFunctionArgs, json } from '@remix-run/node'
+import { Outlet, redirect } from '@remix-run/react'
 import { useState } from 'react'
 import {
   Bell,
@@ -14,6 +15,15 @@ import {
   Signout,
   User,
 } from '~/components/shared/icons'
+import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (await preventUnAuthorizedUser(request)) {
+    return redirect('/login')
+  }
+
+  return json({})
+}
 
 const links = [
   {

@@ -7,7 +7,10 @@ export default function LoginForm() {
       <Input label="Email" type="text" name={'name'} />
       <div>
         <Input label="Password" type="password" name={'name'} />
-        <Link to={'/forgot-password'} className="mt-2 text-xs text-[#0085FF]">
+        <Link
+          to={'/forgot-password'}
+          className="mt-2 font-montserrat text-xs font-medium text-[#0085FF]"
+        >
           I’ve forgotten my password
         </Link>
         <div className="mt-[30px] flex justify-end lg:mt-8">

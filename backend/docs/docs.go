@@ -9,15 +9,24 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/users/{id}": {
-            "get": {
-                "description": "Get details of a user by ID",
+        "/users/create": {
+            "post": {
+                "description": "Create a user with email and password provider",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,180 +36,134 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get a user",
+                "summary": "Create a user with email and password",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
+                        "description": "Create User Request",
+                        "name": "CreateUserRequest",
+                        "in": "body",
+                        "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/swagger.SignupDTO"
                         }
                     }
-                }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/login": {
+            "post": {
+                "description": "Login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Login Request",
+                        "name": "LoginPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.LoginRequestPayload"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/request-forgot-password": {
+            "post": {
+                "description": "Request for password reset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Request for password reset",
+                "parameters": [
+                    {
+                        "description": "Request Reset password",
+                        "name": "ForgotPasswordRequestPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.ForgotPasswordRequestPayload"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/reset-password": {
+            "post": {
+                "description": "Password reset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Password reset",
+                "parameters": [
+                    {
+                        "description": "Reset password",
+                        "name": "ResetPasswordPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.ResetPasswordPayload"
+                        }
+                    }
+                ],
+                "responses": {}
             }
         }
     },
     "definitions": {
-        "models.Address": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "region": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.Allergy": {
-            "type": "object",
-            "properties": {
-                "allergy": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.BioData": {
-            "type": "object",
-            "properties": {
-                "allergies": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Allergy"
-                    }
-                },
-                "health_conditons": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.HealthCondition"
-                    }
-                },
-                "height": {
-                    "type": "integer"
-                },
-                "height_metric": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "weight": {
-                    "type": "integer"
-                },
-                "weight_metric": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.HealthCondition": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "health_condition": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.User": {
+        "swagger.LoginRequestPayload": {
             "type": "object",
             "required": [
-                "first_name",
-                "last_name",
-                "password"
+                "email"
             ],
             "properties": {
-                "address": {
-                    "$ref": "#/definitions/models.Address"
-                },
-                "address_id": {
-                    "type": "integer"
-                },
-                "avatar": {
+                "email": {
                     "type": "string"
                 },
-                "biodata": {
-                    "$ref": "#/definitions/models.BioData"
-                },
-                "biodata_id": {
-                    "type": "integer"
-                },
-                "created_at": {
+                "password": {
                     "type": "string"
-                },
+                }
+            }
+        },
+        "swagger.SignupDTO": {
+            "type": "object",
+            "required": [
+                "dob",
+                "full_name",
+                "password",
+                "phone_number"
+            ],
+            "properties": {
                 "dob": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_deleted": {
-                    "type": "boolean"
-                },
-                "last_login": {
-                    "type": "string"
-                },
-                "last_name": {
+                "full_name": {
                     "type": "string"
                 },
                 "password": {
@@ -208,9 +171,33 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string"
-                },
-                "updated_at": {
+                }
+            }
+        },
+        "user.ForgotPasswordRequestPayload": {
+            "type": "object",
+            "properties": {
+                "email": {
                     "type": "string"
+                }
+            }
+        },
+        "user.ResetPasswordPayload": {
+            "type": "object",
+            "required": [
+                "password",
+                "token",
+                "user"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "integer"
                 }
             }
         }
@@ -219,12 +206,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:4000",
+	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "OctoMed",
+	Description:      "This is the API documentation.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	// LeftDelim:        "{{",

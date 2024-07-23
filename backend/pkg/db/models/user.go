@@ -3,23 +3,21 @@ package models
 import "time"
 
 type User struct {
-	ID           uint      `json:"id,omitempty" gorm:"primary_key"`
-	FirstName    string    `json:"first_name" validate:"required"`
-	LastName     string    `json:"last_name" validate:"required"`
-	Email        string    `json:"email" validate:"email"`
-	PhoneNumber  string    `json:"phone_number"`
-	Password     string    `json:"-"`
-	DOB          string    `json:"dob"`
-	Avatar       string    `json:"avatar"`
-	BioData      BioData   `json:"biodata"`
-	BioDataID    int       `json:"biodata_id"`
-	Address      Address   `json:"address"`
-	AddressID    int       `json:"address_id"`
-	UserPassword string    `json:"password,omitempty" validate:"required" gorm:"-"`
-	LastLogin    time.Time `json:"last_login,omitempty"`
-	IsDeleted    bool      `json:"is_deleted" gorm:"default:false"`
-	CreatedAt    time.Time `json:"created_at,omitempty" gorm:"autoCreateTime"`
-	UpdatedAt    time.Time `json:"updated_at,omitempty" gorm:"autoUpdateTime"`
+	ID          uint      `json:"id,omitempty" gorm:"primary_key"`
+	FullName    string    `json:"full_name" validate:"required"`
+	Email       string    `json:"email" validate:"email"`
+	PhoneNumber string    `json:"phone_number" validate:"required,e164"`
+	Password    string    `json:"-"`
+	DOB         time.Time `json:"dob" gorm:"type:date"`
+	Avatar      string    `json:"avatar"`
+	BioData     *BioData  `json:"biodata"`
+	BioDataID   *int      `json:"biodata_id"`
+	Address     *Address  `json:"address"`
+	AddressID   *int      `json:"address_id"`
+	LastLogin   time.Time `json:"last_login,omitempty"`
+	IsDeleted   bool      `json:"is_deleted" gorm:"default:false"`
+	CreatedAt   time.Time `json:"created_at,omitempty" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty" gorm:"autoUpdateTime"`
 }
 
 type ForgotPassword struct {
@@ -33,16 +31,16 @@ type ForgotPassword struct {
 }
 
 type BioData struct {
-	ID               uint              `json:"id,omitempty" gorm:"primary_key"`
-	UserID           uint              `json:"user_id,omitempty"`
-	User             *User             `json:"user"`
-	Weight           int               `json:"weight"`
-	WeightMetric     string            `json:"weight_metric"`
-	Height           int               `json:"height"`
-	HeightMetric     string            `json:"height_metric"`
-	Allergies        []Allergy         `json:"allergies"`
-	HealthConditions []HealthCondition `json:"health_conditons"`
-	UpdatedAt        time.Time         `json:"updated_at,omitempty" gorm:"autoUpdateTime"`
+	ID               uint               `json:"id,omitempty" gorm:"primary_key"`
+	UserID           uint               `json:"user_id,omitempty"`
+	User             *User              `json:"user"`
+	Weight           int                `json:"weight"`
+	WeightMetric     string             `json:"weight_metric"`
+	Height           int                `json:"height"`
+	HeightMetric     string             `json:"height_metric"`
+	Allergies        []*Allergy         `json:"allergies" gorm:"many2many:bio_data_allergies;"`
+	HealthConditions []*HealthCondition `json:"health_conditons" gorm:"many2many:bio_data_health_conditions;"`
+	UpdatedAt        time.Time          `json:"updated_at,omitempty" gorm:"autoUpdateTime"`
 }
 
 type Allergy struct {

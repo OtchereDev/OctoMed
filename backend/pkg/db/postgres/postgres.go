@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -48,4 +49,16 @@ func OpenDB() (*gorm.DB, error) {
 	}
 
 	return DB, err
+}
+
+func MigrateDB(db *gorm.DB) {
+	db.AutoMigrate(
+		&models.User{},
+		&models.BioData{},
+		&models.ForgotPassword{},
+		&models.Address{},
+		&models.EmergencyContact{},
+		&models.HealthCondition{},
+		&models.Allergy{},
+	)
 }

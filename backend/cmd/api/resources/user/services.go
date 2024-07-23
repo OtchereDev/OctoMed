@@ -3,9 +3,11 @@ package user
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/notification"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 )
 
@@ -20,17 +22,18 @@ func (u UserApp) CreateUser(data models.User) (*models.User, error) {
 		return nil, errors.New("user with this email already exist")
 	}
 
-	hashedPassword, err := HashPassword(data.UserPassword)
+	hashedPassword, err := HashPassword(data.Password)
 
 	if err != nil {
 		return nil, err
 	}
 
 	newUser := models.User{
-		FirstName: data.FirstName,
-		LastName:  data.LastName,
-		Email:     strings.ToLower(data.Email),
-		Password:  string(hashedPassword),
+		FullName:    data.FullName,
+		Email:       strings.ToLower(data.Email),
+		Password:    string(hashedPassword),
+		PhoneNumber: data.PhoneNumber,
+		DOB:         data.DOB,
 	}
 
 	result := db.Create(&newUser)
@@ -75,8 +78,7 @@ func (u UserApp) EditUser(userId int, data UpdateUser) (*models.User, error) {
 		}
 	}
 
-	existingUser.FirstName = data.FirstName
-	existingUser.LastName = data.LastName
+	existingUser.FullName = data.FullName
 	existingUser.Email = strings.ToLower(data.Email)
 
 	result := db.Save(&existingUser)
@@ -129,7 +131,7 @@ func (u UserApp) LoginUser(email string, password string) (string, *models.User,
 	}
 
 	var jwtPayload = JwtPayload{
-		Name:     user.FirstName + " " + user.LastName,
+		Name:     user.FullName,
 		Email:    user.Email,
 		UserType: "user",
 		UserID:   fmt.Sprint(user.ID),
@@ -151,8 +153,8 @@ func (u UserApp) RequestForgotPassword(data ForgotPasswordRequestPayload) error 
 
 	db.Where("is_deleted = ?", false).First(&existingUser, "email = ?", strings.ToLower(data.Email))
 
-	if existingUser.Email != "" {
-		return errors.New("user with this email already exist")
+	if existingUser.Email == "" {
+		return errors.New("user does not exist")
 	}
 
 	code := GenerateCode(10)
@@ -166,8 +168,10 @@ func (u UserApp) RequestForgotPassword(data ForgotPasswordRequestPayload) error 
 	result := db.Save(&request)
 
 	// send email notification with code
-	sendLink := fmt.Sprintf("%v/%v", existingUser.ID, code)
-	fmt.Println(sendLink)
+	sendLink := fmt.Sprintf("%v/reset/%v/%v", os.Getenv("FRONTEND_URL"), existingUser.ID, code)
+	notification.SendForgotPassword(
+		existingUser.FullName, existingUser.Email, sendLink,
+	)
 
 	return result.Error
 }
@@ -179,7 +183,7 @@ func (u UserApp) ResetPassword(data ResetPasswordPayload) error {
 
 	db.Where("is_used = ?", false).Preload("User").First(&code, "user_id = ? AND token = ?", data.User, data.Token)
 
-	if code.Token != "" {
+	if code.Token == "" || code.IsUsed {
 		return errors.New("token does not exist")
 	}
 
@@ -190,8 +194,10 @@ func (u UserApp) ResetPassword(data ResetPasswordPayload) error {
 	}
 
 	code.User.Password = string(hashedPassword)
+	code.IsUsed = true
 
 	result := db.Save(&code.User)
+	db.Save(&code)
 
 	return result.Error
 }

@@ -15,7 +15,8 @@ import (
 
 	u "github.com/OtchereDev/ProjectAPI/cmd/api/resources/user"
 	_ "github.com/OtchereDev/ProjectAPI/docs"
-	db "github.com/OtchereDev/ProjectAPI/pkg/db/postgres"
+	"github.com/OtchereDev/ProjectAPI/pkg/db/postgres"
+	"github.com/OtchereDev/ProjectAPI/pkg/middlewares"
 )
 
 type Application struct {
@@ -55,10 +56,16 @@ func main() {
 	app.Use(recover.New())
 	app.Use(cors.New())
 
-	db, err := db.OpenDB()
+	// set middleware
+	middlewares.SetupMiddleAuthMiddleware()
+
+	db, err := postgres.OpenDB()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// migrate DB
+	postgres.MigrateDB(db)
 
 	s := &Application{
 		DB: db,

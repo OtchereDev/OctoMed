@@ -2,22 +2,23 @@ package user
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
+	"github.com/OtchereDev/ProjectAPI/pkg/swagger"
 	v "github.com/OtchereDev/ProjectAPI/pkg/validate"
 	"github.com/gofiber/fiber/v2"
 )
 
-// @Summary Get a user
-// @Description Get details of a user by ID
+// @Summary Create a user with email and password
+// @Description Create a user with email and password provider
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} models.User
-// @Router /users/{id} [get]
+// @Param CreateUserRequest body swagger.SignupDTO true "Create User Request"
+// @Router /users/create [post]
 func CreateUser(c *fiber.Ctx, app UserApp) error {
-	var user models.User
+	var user swagger.SignupDTO
 
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(http.StatusBadRequest).
@@ -32,7 +33,17 @@ func CreateUser(c *fiber.Ctx, app UserApp) error {
 			)
 	}
 
-	response, err := app.CreateUser(user)
+	d, _ := time.Parse(time.RFC3339, user.DOB)
+
+	newUser := models.User{
+		FullName:    user.FullName,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
+		Password:    user.Password,
+		DOB:         d,
+	}
+
+	response, err := app.CreateUser(newUser)
 
 	if err != nil {
 		return c.Status(http.StatusBadRequest).
@@ -43,6 +54,13 @@ func CreateUser(c *fiber.Ctx, app UserApp) error {
 		JSON(&fiber.Map{"data": response, "statusCode": http.StatusOK})
 }
 
+// @Summary Login
+// @Description Login
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param LoginPayload body swagger.LoginRequestPayload true "Login Request"
+// @Router /users/login [post]
 func LoginUser(c *fiber.Ctx, app UserApp) error {
 	var loginData LoginRequestPayload
 
@@ -67,8 +85,8 @@ func LoginUser(c *fiber.Ctx, app UserApp) error {
 
 	return c.Status(http.StatusOK).
 		JSON(&fiber.Map{"statusCode": 200,
-			"data":         map[string]string{"access_token": at},
-			"user_details": u})
+			"data": map[string]any{"access_token": at, "user_details": u},
+		})
 }
 
 func EditUser(c *fiber.Ctx, app UserApp) error {
@@ -125,6 +143,13 @@ func GetUserDetails(c *fiber.Ctx, app UserApp) error {
 			"statusCode": http.StatusOK})
 }
 
+// @Summary Request for password reset
+// @Description Request for password reset
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param ForgotPasswordRequestPayload body ForgotPasswordRequestPayload true "Request Reset password"
+// @Router /users/request-forgot-password [post]
 func RequestForgotPassword(c *fiber.Ctx, app UserApp) error {
 	var updatePayload ForgotPasswordRequestPayload
 
@@ -148,6 +173,13 @@ func RequestForgotPassword(c *fiber.Ctx, app UserApp) error {
 			"statusCode": http.StatusOK})
 }
 
+// @Summary Password reset
+// @Description Password reset
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param ResetPasswordPayload body ResetPasswordPayload true "Reset password"
+// @Router /users/reset-password [post]
 func RequestPassword(c *fiber.Ctx, app UserApp) error {
 	var updatePayload ResetPasswordPayload
 

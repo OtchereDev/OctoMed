@@ -111,7 +111,7 @@
 }
 
 .input-group input:focus ~ label,
-.input-group input:valid ~ label {
+.input-group.isFilled input ~ label {
   top: 14px;
   font-size: 10px;
 }

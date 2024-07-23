@@ -1,6 +1,10 @@
-import { Link, MetaFunction } from '@remix-run/react'
-import { useState } from 'react'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import { Link, MetaFunction, json, redirect, useActionData } from '@remix-run/react'
 import ForgotPasswordForm from '~/components/auth/ForgotPasswordForm'
+import { ForgotPasswordDTO } from '~/dto/user.dto'
+import { IError, formatZodErrors } from '~/lib/formatZodError'
+import { preventLoggedInUser } from '~/lib/preventLoggedInUser'
+import { requestForgotPassword } from '~/server/user.server'
 
 export const meta: MetaFunction = () => [
   {
@@ -12,8 +16,44 @@ export const meta: MetaFunction = () => [
   },
 ]
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (await preventLoggedInUser(request)) {
+    return redirect('/')
+  }
+
+  return json({})
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData()
+  const email = formData.get('email') ?? ''
+
+  try {
+    const result = ForgotPasswordDTO.parse({ email })
+
+    const response = await requestForgotPassword(result)
+
+    return json({
+      errors: [] as IError[],
+      response: response.message,
+      status: response.status,
+    })
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+        status: false,
+      })
+    }
+  }
+}
+
+export type IForgotPasswordAction = typeof action
+
 export default function ForgotPassword() {
-  const [success, setSuccess] = useState(false)
+  const actionData = useActionData<IForgotPasswordAction>()
+
   return (
     <section>
       <p className="mt-[10px] hidden text-right font-montserrat text-[#4F4F4F] lg:block">
@@ -23,7 +63,7 @@ export default function ForgotPassword() {
         </Link>
       </p>
       <section className="lg:mx-auto lg:max-w-[400px] lg:pb-[50px]">
-        {success ? (
+        {actionData?.status ? (
           <div className="text-center">
             <h1 className="mt-[60px] font-raleway font-bold text-primary lg:mt-[180px] lg:text-2xl">
               Reset link sent

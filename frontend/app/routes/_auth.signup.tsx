@@ -1,11 +1,14 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
-import { json, Link, MetaFunction, redirect } from '@remix-run/react'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import { Link, MetaFunction, json, redirect } from '@remix-run/react'
 import SignupForm from '~/components/auth/SignupForm'
+import { SignupDTO } from '~/dto/user.dto'
+import { IError, formatZodErrors } from '~/lib/formatZodError'
 import { preventLoggedInUser } from '~/lib/preventLoggedInUser'
+import { signup } from '~/server/user.server'
 
 export const meta: MetaFunction = () => [
   {
-    title: 'Login - OctoMed | Your AI Health Assistant',
+    title: 'Signup - OctoMed | Your AI Health Assistant',
   },
   {
     name: 'description',
@@ -20,6 +23,47 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({})
 }
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData()
+
+  const email = formData.get('email') ?? ''
+  const password = formData.get('password') ?? ''
+  const phone_number = (formData.get('phone_number') as string).replace(/ /g, '') ?? ''
+  const dob = formData.get('dob') ?? ''
+  const full_name = formData.get('full_name') ?? ''
+  const confirm_password = formData.get('confirm_password') ?? ''
+
+  try {
+    const result = SignupDTO.parse({
+      email,
+      password,
+      phone_number,
+      dob,
+      full_name,
+      confirm_password,
+    })
+    const response = await signup({ ...result, dob: new Date(dob as string).toISOString() })
+
+    if (response.status) {
+      return redirect('/login')
+    } else {
+      return json({
+        errors: [] as IError[],
+        response: response.message,
+      })
+    }
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+      })
+    }
+  }
+}
+
+export type ISignupAction = typeof action
 
 export default function Signup() {
   return (

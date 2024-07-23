@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const instance = axios.create({
-  baseURL: 'https://staging-api.altisend.com/v1',
+  baseURL: 'http://localhost:4000',
 })
 
 instance.interceptors.request.use(

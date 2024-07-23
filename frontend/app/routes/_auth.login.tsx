@@ -1,7 +1,11 @@
-import { LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
+import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
 import { Link, json, redirect } from '@remix-run/react'
 import LoginForm from '~/components/auth/LoginForm'
+import { LoginDTO } from '~/dto/user.dto'
+import { IError, formatZodErrors } from '~/lib/formatZodError'
 import { preventLoggedInUser } from '~/lib/preventLoggedInUser'
+import { login } from '~/server/user.server'
+import { commitSession, getSession } from '~/sessions'
 
 export const meta: MetaFunction = () => [
   {
@@ -20,6 +24,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({})
 }
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData()
+  const email = formData.get('email') ?? ''
+  const password = formData.get('password') ?? ''
+  const session = await getSession(request.headers.get('Cookie'))
+
+  try {
+    const result = LoginDTO.parse({ email, password })
+
+    const response = await login(result)
+    if (response.status) {
+      session.set('accessToken', response.access_token)
+      return redirect('/', {
+        headers: {
+          'Set-Cookie': await commitSession(session),
+        },
+      })
+    } else {
+      return json({
+        errors: [] as IError[],
+        response: response.message,
+      })
+    }
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+      })
+    }
+  }
+}
+
+export type ILoginAction = typeof action
 
 export default function Login() {
   return (

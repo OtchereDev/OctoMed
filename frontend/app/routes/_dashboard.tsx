@@ -1,6 +1,7 @@
-import { LoaderFunctionArgs, json } from '@remix-run/node'
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node'
 import { Outlet, redirect } from '@remix-run/react'
 import { useState } from 'react'
+import SignoutButton from '~/components/shared/Signout'
 import {
   Bell,
   Community,
@@ -12,10 +13,10 @@ import {
   Logo,
   LogoSM,
   More,
-  Signout,
   User,
 } from '~/components/shared/icons'
 import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
+import { commitSession, getSession } from '~/sessions'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   if (await preventUnAuthorizedUser(request)) {
@@ -23,6 +24,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({})
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request.headers.get('Cookie'))
+
+  console.log('I was called')
+
+  session.unset('accessToken')
+  session.unset('email')
+
+  return redirect('/', {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  })
 }
 
 const links = [
@@ -90,10 +106,13 @@ export default function DashboardLayout() {
             </div>
 
             <div className="border-t pt-[30px] font-montserrat font-medium text-[#4D5061]">
-              <button className="flex items-center gap-3">
-                <Signout />
-                <p>Sign Out</p>
-              </button>
+              {/* <Form method="POST">
+                <button type="submit" className="flex items-center gap-3">
+                  <Signout />
+                  <p>Sign Out</p>
+                </button>
+              </Form> */}
+              <SignoutButton />
             </div>
           </div>
         </aside>

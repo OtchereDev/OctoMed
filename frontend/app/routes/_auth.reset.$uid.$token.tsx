@@ -1,8 +1,10 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
-import { json, Link, MetaFunction, redirect } from '@remix-run/react'
-import { useState } from 'react'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import { Link, MetaFunction, json, redirect, useActionData } from '@remix-run/react'
 import CreateNewPassword from '~/components/auth/CreateNewPassword'
+import { ResetPasswordDTO } from '~/dto/user.dto'
+import { IError, formatZodErrors } from '~/lib/formatZodError'
 import { preventLoggedInUser } from '~/lib/preventLoggedInUser'
+import { requestPassword } from '~/server/user.server'
 
 export const meta: MetaFunction = () => [
   {
@@ -22,8 +24,40 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({})
 }
 
+export async function action({ request, params }: ActionFunctionArgs) {
+  const formData = await request.formData()
+  const password = formData.get('password') ?? ''
+  const confirm_password = formData.get('confirm_password') ?? ''
+
+  try {
+    const result = ResetPasswordDTO.parse({
+      confirm_password,
+      password,
+      user: parseInt(params?.uid as string),
+      token: params?.token,
+    })
+
+    const response = await requestPassword(result)
+
+    return json({
+      errors: [] as IError[],
+      response: response.message,
+      success: response.status,
+    })
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+        success: false,
+      })
+    }
+  }
+}
+export type IResetPasswordAction = typeof action
+
 export default function ResetPassword() {
-  const [success, setSuccess] = useState(true)
+  const actionData = useActionData<IResetPasswordAction>()
   return (
     <section>
       <p className="mt-[10px] hidden text-right font-montserrat text-[#4F4F4F] lg:block">
@@ -33,7 +67,7 @@ export default function ResetPassword() {
         </Link>
       </p>
       <section className="lg:mx-auto lg:max-w-[500px] lg:pb-[50px]">
-        {success ? (
+        {actionData?.success ? (
           <div className="text-center">
             <h1 className="mt-[60px] font-raleway font-bold text-primary lg:mt-[180px] lg:text-2xl">
               Password reset successful
@@ -52,7 +86,7 @@ export default function ResetPassword() {
             <h1 className="mt-[60px] font-raleway font-bold text-primary lg:mt-[140px] lg:text-2xl">
               Create new password
             </h1>
-            <p className="mb-[30px] mt-[20px] font-montserrat text-sm text-secondary lg:text-base">
+            <p className="mb-[30px] mt-[20px] font-montserrat text-sm text-[#191919] lg:text-base">
               Create a new password for your account
             </p>
             <CreateNewPassword />

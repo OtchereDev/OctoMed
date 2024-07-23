@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    env_file:
+      - configs/.env
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/usr/src/app
+    command: ./main -addr 0.0.0.0:4000
+    depends_on:
+      - db
+      - redis
+    networks:
+      - devnetwork
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: OctoMed
+      POSTGRES_PASSWORD: Oliver054.
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devnetwork
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--requirepass", "Oliver054."]
+    networks:
+      - devnetwork
+
+volumes:
+  postgres-db:
+  redis-data:
+
+networks:
+  devnetwork:
+    driver: bridge

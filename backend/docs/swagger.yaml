@@ -1,5 +1,67 @@
 basePath: /
 definitions:
+  swagger.BioDataPayload:
+    properties:
+      avatar:
+        type: string
+      height:
+        type: integer
+      height_metric:
+        type: string
+      weight:
+        type: integer
+      weight_metric:
+        type: string
+    type: object
+  swagger.CreateAllergyPayloady:
+    properties:
+      allergy:
+        type: string
+    type: object
+  swagger.CreateHealthCondition:
+    properties:
+      health_condition:
+        type: string
+    type: object
+  swagger.HealthConditionPayload:
+    properties:
+      allergies:
+        items:
+          type: integer
+        type: array
+      health_conditions:
+        items:
+          type: integer
+        type: array
+      remove_allergies:
+        items:
+          type: integer
+        type: array
+      remove_health_conditions:
+        items:
+          type: integer
+        type: array
+    type: object
+  swagger.LocationPayload:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      region:
+        type: string
+      street:
+        type: string
+    required:
+    - country
+    - name
+    - phone_number
+    - region
+    type: object
   swagger.LoginRequestPayload:
     properties:
       email:
@@ -45,6 +107,21 @@ definitions:
     - token
     - user
     type: object
+  user.UpdateUser:
+    properties:
+      dob:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      phone_number:
+        type: string
+    required:
+    - dob
+    - full_name
+    - phone_number
+    type: object
 host: localhost:4000
 info:
   contact:
@@ -59,6 +136,53 @@ info:
   title: OctoMed
   version: "1.0"
 paths:
+  /health-conditions:
+    get:
+      consumes:
+      - application/json
+      description: Return all allergies and health conditions
+      produces:
+      - application/json
+      responses: {}
+      summary: Get All condition
+      tags:
+      - health_conditions
+  /health-conditions/create/allergy:
+    post:
+      consumes:
+      - application/json
+      description: Create Allergy
+      parameters:
+      - description: Create Allergy
+        in: body
+        name: CreateAllergy
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.CreateAllergyPayloady'
+      produces:
+      - application/json
+      responses: {}
+      summary: Create Allergy
+      tags:
+      - health_conditions
+  /health-conditions/create/health-condition:
+    post:
+      consumes:
+      - application/json
+      description: Create Health condition
+      parameters:
+      - description: Create Health Condition
+        in: body
+        name: CreateHealthCondition
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.CreateHealthCondition'
+      produces:
+      - application/json
+      responses: {}
+      summary: Create Health condition
+      tags:
+      - health_conditions
   /users/create:
     post:
       consumes:
@@ -77,6 +201,35 @@ paths:
       summary: Create a user with email and password
       tags:
       - users
+  /users/details:
+    get:
+      consumes:
+      - application/json
+      description: User Details
+      produces:
+      - application/json
+      responses: {}
+      summary: Get User Details
+      tags:
+      - users
+  /users/details/edit:
+    put:
+      consumes:
+      - application/json
+      description: Edit User Detail
+      parameters:
+      - description: Update User
+        in: body
+        name: UpdateUser
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUser'
+      produces:
+      - application/json
+      responses: {}
+      summary: Edit User Detail
+      tags:
+      - users
   /users/login:
     post:
       consumes:
@@ -93,6 +246,60 @@ paths:
       - application/json
       responses: {}
       summary: Login
+      tags:
+      - users
+  /users/onboarding/biodata:
+    post:
+      consumes:
+      - application/json
+      description: Onboarding for biodata
+      parameters:
+      - description: Biodata
+        in: body
+        name: swagger.BioDataPayload
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.BioDataPayload'
+      produces:
+      - application/json
+      responses: {}
+      summary: Onboarding for biodata
+      tags:
+      - users
+  /users/onboarding/health-information:
+    post:
+      consumes:
+      - application/json
+      description: Onboarding for health condition
+      parameters:
+      - description: Health Condition
+        in: body
+        name: swagger.HealthConditionPayload
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.HealthConditionPayload'
+      produces:
+      - application/json
+      responses: {}
+      summary: Onboarding for health condition
+      tags:
+      - users
+  /users/onboarding/location:
+    post:
+      consumes:
+      - application/json
+      description: Onboarding for location
+      parameters:
+      - description: Location
+        in: body
+        name: swagger.LocationPayload
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.LocationPayload'
+      produces:
+      - application/json
+      responses: {}
+      summary: Onboarding for location
       tags:
       - users
   /users/request-forgot-password:
@@ -129,6 +336,17 @@ paths:
       - application/json
       responses: {}
       summary: Password reset
+      tags:
+      - users
+  /users/skip-onboarding:
+    post:
+      consumes:
+      - application/json
+      description: Skip onboarding
+      produces:
+      - application/json
+      responses: {}
+      summary: Skip onboarding
       tags:
       - users
 swagger: "2.0"

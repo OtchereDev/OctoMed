@@ -24,6 +24,76 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/health-conditions": {
+            "get": {
+                "description": "Return all allergies and health conditions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health_conditions"
+                ],
+                "summary": "Get All condition",
+                "responses": {}
+            }
+        },
+        "/health-conditions/create/allergy": {
+            "post": {
+                "description": "Create Allergy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health_conditions"
+                ],
+                "summary": "Create Allergy",
+                "parameters": [
+                    {
+                        "description": "Create Allergy",
+                        "name": "CreateAllergy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.CreateAllergyPayloady"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/health-conditions/create/health-condition": {
+            "post": {
+                "description": "Create Health condition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health_conditions"
+                ],
+                "summary": "Create Health condition",
+                "parameters": [
+                    {
+                        "description": "Create Health Condition",
+                        "name": "CreateHealthCondition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.CreateHealthCondition"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/users/create": {
             "post": {
                 "description": "Create a user with email and password provider",
@@ -51,6 +121,49 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/users/details": {
+            "get": {
+                "description": "User Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get User Details",
+                "responses": {}
+            }
+        },
+        "/users/details/edit": {
+            "put": {
+                "description": "Edit User Detail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Edit User Detail",
+                "parameters": [
+                    {
+                        "description": "Update User",
+                        "name": "UpdateUser",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateUser"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/users/login": {
             "post": {
                 "description": "Login",
@@ -72,6 +185,87 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/swagger.LoginRequestPayload"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/onboarding/biodata": {
+            "post": {
+                "description": "Onboarding for biodata",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Onboarding for biodata",
+                "parameters": [
+                    {
+                        "description": "Biodata",
+                        "name": "swagger.BioDataPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.BioDataPayload"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/onboarding/health-information": {
+            "post": {
+                "description": "Onboarding for health condition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Onboarding for health condition",
+                "parameters": [
+                    {
+                        "description": "Health Condition",
+                        "name": "swagger.HealthConditionPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.HealthConditionPayload"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/onboarding/location": {
+            "post": {
+                "description": "Onboarding for location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Onboarding for location",
+                "parameters": [
+                    {
+                        "description": "Location",
+                        "name": "swagger.LocationPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.LocationPayload"
                         }
                     }
                 ],
@@ -131,9 +325,119 @@ const docTemplate = `{
                 ],
                 "responses": {}
             }
+        },
+        "/users/skip-onboarding": {
+            "post": {
+                "description": "Skip onboarding",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Skip onboarding",
+                "responses": {}
+            }
         }
     },
     "definitions": {
+        "swagger.BioDataPayload": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "height_metric": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
+                },
+                "weight_metric": {
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.CreateAllergyPayloady": {
+            "type": "object",
+            "properties": {
+                "allergy": {
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.CreateHealthCondition": {
+            "type": "object",
+            "properties": {
+                "health_condition": {
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.HealthConditionPayload": {
+            "type": "object",
+            "properties": {
+                "allergies": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "health_conditions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "remove_allergies": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "remove_health_conditions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "swagger.LocationPayload": {
+            "type": "object",
+            "required": [
+                "country",
+                "name",
+                "phone_number",
+                "region"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                }
+            }
+        },
         "swagger.LoginRequestPayload": {
             "type": "object",
             "required": [
@@ -198,6 +502,28 @@ const docTemplate = `{
                 },
                 "user": {
                     "type": "integer"
+                }
+            }
+        },
+        "user.UpdateUser": {
+            "type": "object",
+            "required": [
+                "dob",
+                "full_name",
+                "phone_number"
+            ],
+            "properties": {
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
                 }
             }
         }

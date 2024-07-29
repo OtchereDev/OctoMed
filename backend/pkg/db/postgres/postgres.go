@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	healthinfo "github.com/OtchereDev/ProjectAPI/cmd/api/resources/health-info"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -54,11 +55,12 @@ func OpenDB() (*gorm.DB, error) {
 func MigrateDB(db *gorm.DB) {
 	db.AutoMigrate(
 		&models.User{},
-		&models.BioData{},
-		&models.ForgotPassword{},
-		&models.Address{},
-		&models.EmergencyContact{},
-		&models.HealthCondition{},
-		&models.Allergy{},
+		// &models.BioData{},
+		// &models.ForgotPassword{},
+		// &models.Address{},
+		// &models.EmergencyContact{},
+		// &models.HealthCondition{},
+		// &models.Allergy{},
 	)
+	healthinfo.MigrateHealthCondition(db)
 }

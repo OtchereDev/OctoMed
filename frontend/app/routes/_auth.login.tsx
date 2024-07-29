@@ -30,14 +30,28 @@ export async function action({ request }: ActionFunctionArgs) {
   const email = formData.get('email') ?? ''
   const password = formData.get('password') ?? ''
   const session = await getSession(request.headers.get('Cookie'))
+  let redirectUrl = '/'
 
   try {
     const result = LoginDTO.parse({ email, password })
 
     const response = await login(result)
-    if (response.status) {
+    if (response.status && response.user) {
       session.set('accessToken', response.access_token)
-      return redirect('/', {
+
+      if (!response.user.skip_onboarding) {
+        if (!response.user.biodata_setup) {
+          redirectUrl = '/onboarding/biodata'
+        } else if (!response.user.healthdata_setup) {
+          redirectUrl = '/onboarding/health-details'
+        } else if (!response.user.healthdata_setup) {
+          redirectUrl = '/onboarding/location'
+        }
+      }
+
+      session.flash('toast', 'Successfully logged in')
+
+      return redirect(redirectUrl, {
         headers: {
           'Set-Cookie': await commitSession(session),
         },

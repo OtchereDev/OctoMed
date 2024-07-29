@@ -11,8 +11,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
-	"gorm.io/gorm"
 
+	healthinfo "github.com/OtchereDev/ProjectAPI/cmd/api/resources/health-info"
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/storage"
 	u "github.com/OtchereDev/ProjectAPI/cmd/api/resources/user"
 	_ "github.com/OtchereDev/ProjectAPI/docs"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/postgres"
@@ -20,8 +21,8 @@ import (
 )
 
 type Application struct {
-	DB    *gorm.DB
-	Users *u.UserApp
+	Users      *u.UserApp
+	HealthInfo *healthinfo.HealthApp
 }
 
 // @title OctoMed
@@ -55,8 +56,6 @@ func main() {
 	// middlewares
 	app.Use(recover.New())
 	app.Use(cors.New())
-
-	// set middleware
 	middlewares.SetupMiddleAuthMiddleware()
 
 	db, err := postgres.OpenDB()
@@ -67,9 +66,16 @@ func main() {
 	// migrate DB
 	postgres.MigrateDB(db)
 
+	// start storage
+	storage.SetupCloudinary()
+
 	s := &Application{
-		DB: db,
 		Users: &u.UserApp{
+			DB:       db,
+			App:      app,
+			Validate: validate,
+		},
+		HealthInfo: &healthinfo.HealthApp{
 			DB:       db,
 			App:      app,
 			Validate: validate,
@@ -78,6 +84,7 @@ func main() {
 
 	// routes
 	s.Users.UserRoutes()
+	s.HealthInfo.HealthConditionRoutes()
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	app.Listen(*addr)

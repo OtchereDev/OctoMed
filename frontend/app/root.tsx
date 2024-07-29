@@ -1,3 +1,4 @@
+import { ManifestLink } from '@remix-pwa/sw'
 import { LinksFunction } from '@remix-run/node'
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react'
 import { Toaster } from './components/ui/toaster'
@@ -18,6 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <ManifestLink />
       </head>
       <body>
         {children}

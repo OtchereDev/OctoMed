@@ -2,10 +2,12 @@ package user
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 	"github.com/OtchereDev/ProjectAPI/pkg/swagger"
+	"github.com/OtchereDev/ProjectAPI/pkg/utils"
 	v "github.com/OtchereDev/ProjectAPI/pkg/validate"
 	"github.com/gofiber/fiber/v2"
 )
@@ -89,9 +91,17 @@ func LoginUser(c *fiber.Ctx, app UserApp) error {
 		})
 }
 
+// @Summary Edit User Detail
+// @Description Edit User Detail
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param UpdateUser body UpdateUser true "Update User"
+// @Router /users/details/edit [put]
 func EditUser(c *fiber.Ctx, app UserApp) error {
 	var updatePayload UpdateUser
-	userId, _ := c.ParamsInt("userId")
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
 
 	if err := c.BodyParser(&updatePayload); err != nil {
 		return c.Status(http.StatusBadRequest).
@@ -105,7 +115,7 @@ func EditUser(c *fiber.Ctx, app UserApp) error {
 				"data": &fiber.Map{"errors": v.SerializeErrors(validationErr)}})
 	}
 
-	user, err := app.EditUser(userId, updatePayload)
+	details, err := app.EditUser(userId, updatePayload)
 
 	if err != nil {
 		return c.Status(http.StatusBadRequest).
@@ -114,20 +124,20 @@ func EditUser(c *fiber.Ctx, app UserApp) error {
 
 	return c.Status(http.StatusOK).
 		JSON(&fiber.Map{
-			"data":       user,
+			"data":       details,
 			"message":    "Successfully updated user",
 			"statusCode": http.StatusOK})
 }
 
+// @Summary Get User Details
+// @Description User Details
+// @Tags users
+// @Accept json
+// @Produce json
+// @Router /users/details [get]
 func GetUserDetails(c *fiber.Ctx, app UserApp) error {
-	userId, err := c.ParamsInt("userId")
-
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).
-			JSON(fiber.Map{
-				"status": fiber.StatusUnauthorized,
-				"data":   &fiber.Map{"message": err.Error()}})
-	}
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
 
 	response, err := app.GetUserDetail(userId)
 
@@ -207,4 +217,148 @@ func RequestPassword(c *fiber.Ctx, app UserApp) error {
 		JSON(&fiber.Map{
 			"message":    "Password has successfully changed",
 			"statusCode": http.StatusOK})
+}
+
+// @Summary Skip onboarding
+// @Description Skip onboarding
+// @Tags users
+// @Accept json
+// @Produce json
+// @Router /users/skip-onboarding [post]
+func SkipOnboarding(c *fiber.Ctx, app UserApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	err := app.SkipOnboarding(userId)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(&fiber.Map{"message": err.Error(),
+				"statusCode": http.StatusBadRequest})
+	}
+
+	return c.Status(http.StatusOK).
+		JSON(&fiber.Map{
+			"message":    "Successfully skipped onboarding process",
+			"statusCode": http.StatusOK})
+}
+
+// @Summary Onboarding for biodata
+// @Description Onboarding for biodata
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param swagger.BioDataPayload body swagger.BioDataPayload true "Biodata"
+// @Router /users/onboarding/biodata [post]
+func OnboardingBiodata(c *fiber.Ctx, app UserApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	var payload swagger.BioDataPayload
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{"message": "There was parsing body",
+				"data": &fiber.Map{"errors": []string{err.Error()}}})
+	}
+
+	if validationErr := app.Validate.Struct(&payload); validationErr != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{"message": "Errors",
+				"data": &fiber.Map{"errors": v.SerializeErrors(validationErr)}})
+	}
+
+	err := app.OnboardingBiodata(userId, payload)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(&fiber.Map{"message": err.Error(),
+				"statusCode": http.StatusBadRequest})
+	}
+
+	return c.Status(http.StatusOK).
+		JSON(&fiber.Map{
+			"message":    "Successfully added biodata",
+			"statusCode": http.StatusOK,
+		})
+}
+
+// @Summary Onboarding for location
+// @Description Onboarding for location
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param swagger.LocationPayload body swagger.LocationPayload true "Location"
+// @Router /users/onboarding/location [post]
+func OnboardingLocation(c *fiber.Ctx, app UserApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	var payload swagger.LocationPayload
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{"message": "There was parsing body",
+				"data": &fiber.Map{"errors": []string{err.Error()}}})
+	}
+
+	if validationErr := app.Validate.Struct(&payload); validationErr != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{"message": "Errors",
+				"data": &fiber.Map{"errors": v.SerializeErrors(validationErr)}})
+	}
+
+	err := app.OnboardingLocation(userId, payload)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(&fiber.Map{"message": err.Error(),
+				"statusCode": http.StatusBadRequest})
+	}
+
+	return c.Status(http.StatusOK).
+		JSON(&fiber.Map{
+			"message":    "Successfully added location information",
+			"statusCode": http.StatusOK,
+		})
+}
+
+// @Summary Onboarding for health condition
+// @Description Onboarding for health condition
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param swagger.HealthConditionPayload body swagger.HealthConditionPayload true "Health Condition"
+// @Router /users/onboarding/health-information [post]
+func OnboardingHealthDetails(c *fiber.Ctx, app UserApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	var payload swagger.HealthConditionPayload
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{"message": "There was parsing body",
+				"data": &fiber.Map{"errors": []string{err.Error()}}})
+	}
+
+	if validationErr := app.Validate.Struct(&payload); validationErr != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{"message": "Errors",
+				"data": &fiber.Map{"errors": v.SerializeErrors(validationErr)}})
+	}
+
+	err := app.OnboardingHealthDetails(userId, payload)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(&fiber.Map{"message": err.Error(),
+				"statusCode": http.StatusBadRequest})
+	}
+
+	return c.Status(http.StatusOK).
+		JSON(&fiber.Map{
+			"message":    "Successfully added health information",
+			"statusCode": http.StatusOK,
+		})
 }

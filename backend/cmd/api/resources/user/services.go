@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/notification"
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/storage"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
+	"github.com/OtchereDev/ProjectAPI/pkg/swagger"
 )
 
 func (u UserApp) CreateUser(data models.User) (*models.User, error) {
@@ -16,7 +18,8 @@ func (u UserApp) CreateUser(data models.User) (*models.User, error) {
 
 	var existingUser models.User
 
-	db.Where("is_deleted = ?", false).First(&existingUser, "email = ?", strings.ToLower(data.Email))
+	db.Where("is_deleted = ?", false).
+		First(&existingUser, "email = ?", strings.ToLower(data.Email))
 
 	if existingUser.Email != "" {
 		return nil, errors.New("user with this email already exist")
@@ -51,7 +54,10 @@ func (u UserApp) GetUserDetail(userId int) (*models.User, error) {
 
 	var user models.User
 
-	result := db.First(&user, "id = ?", userId)
+	result := db.Preload("EmergencyContact").
+		Preload("BioData").Preload("BioData.Allergies").
+		Preload("BioData.HealthConditions").Preload("Address").
+		First(&user, "id = ?", userId)
 
 	return &user, result.Error
 }
@@ -80,6 +86,12 @@ func (u UserApp) EditUser(userId int, data UpdateUser) (*models.User, error) {
 
 	existingUser.FullName = data.FullName
 	existingUser.Email = strings.ToLower(data.Email)
+	existingUser.PhoneNumber = data.PhoneNumber
+
+	d, err := time.Parse(time.RFC3339, data.DOB)
+	if err == nil {
+		existingUser.DOB = d
+	}
 
 	result := db.Save(&existingUser)
 
@@ -151,7 +163,8 @@ func (u UserApp) RequestForgotPassword(data ForgotPasswordRequestPayload) error 
 
 	var existingUser models.User
 
-	db.Where("is_deleted = ?", false).First(&existingUser, "email = ?", strings.ToLower(data.Email))
+	db.Where("is_deleted = ?", false).
+		First(&existingUser, "email = ?", strings.ToLower(data.Email))
 
 	if existingUser.Email == "" {
 		return errors.New("user does not exist")
@@ -200,4 +213,176 @@ func (u UserApp) ResetPassword(data ResetPasswordPayload) error {
 	db.Save(&code)
 
 	return result.Error
+}
+
+func (u UserApp) SkipOnboarding(userId int) error {
+	db := u.DB
+
+	var user models.User
+
+	db.Where("is_deleted = ?", false).First(&user, "id = ?", userId)
+
+	user.SkipOnboarding = true
+
+	result := db.Save(&user)
+
+	return result.Error
+
+}
+
+func (u UserApp) OnboardingBiodata(userId int, data swagger.BioDataPayload) error {
+	db := u.DB
+
+	var user models.User
+
+	db.Where("is_deleted = ?", false).Preload("BioData").
+		First(&user, "id = ?", userId)
+
+	avatar, err := storage.
+		UploadImage(data.Avatar, fmt.Sprintf("%v-avatar", user.ID))
+	biodata := user.BioData
+
+	if err == nil {
+		user.Avatar = avatar
+	}
+
+	if biodata != nil {
+		biodata.Height = data.Height
+		biodata.HeightMetric = data.HeightMetric
+		biodata.Weight = data.Weight
+		biodata.WeightMetric = data.WeightMetric
+	} else {
+		biodata = &models.BioData{
+			Height:       data.Height,
+			Weight:       data.Weight,
+			WeightMetric: data.WeightMetric,
+			HeightMetric: data.HeightMetric,
+			UserID:       user.ID,
+			User:         &user,
+		}
+	}
+
+	result := db.Save(biodata)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	user.BioDataID = &biodata.ID
+	user.BioData = biodata
+	user.BioDataSetup = true
+
+	result = db.Save(&user)
+
+	return result.Error
+}
+
+func (u UserApp) OnboardingLocation(userId int, data swagger.LocationPayload) error {
+	db := u.DB
+
+	var user models.User
+
+	db.Where("is_deleted = ?", false).
+		Preload("Address").Preload("EmergencyContact").
+		First(&user, "id = ?", userId)
+	address := user.Address
+	emergency := user.EmergencyContact
+
+	if address != nil {
+		address.Country = data.Country
+		address.Region = data.Region
+		address.City = data.City
+		address.Street = data.Street
+	} else {
+		address = &models.Address{
+			Country: data.Country,
+			Region:  data.Region,
+			City:    data.City,
+			Street:  data.Street,
+			UserID:  user.ID,
+			User:    &user,
+		}
+	}
+
+	result := db.Save(address)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if emergency != nil {
+		emergency.Name = data.Name
+		emergency.PhoneNumber = data.PhoneNumber
+
+	} else {
+		emergency = &models.EmergencyContact{
+			Name:        data.Name,
+			PhoneNumber: data.PhoneNumber,
+			UserID:      user.ID,
+			User:        &user,
+		}
+	}
+
+	result = db.Save(emergency)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	user.EmergencyContactID = &emergency.ID
+	user.EmergencyContact = emergency
+	user.AddressID = &address.ID
+	user.Address = address
+	user.LocationSetup = true
+
+	result = db.Save(&user)
+
+	return result.Error
+}
+
+func (u UserApp) OnboardingHealthDetails(userId int, payload swagger.HealthConditionPayload) error {
+	db := u.DB
+	query := "id IN ?"
+
+	var bioData models.BioData
+
+	db.
+		Preload("HealthConditions").
+		Preload("Allergies").First(&bioData, "user_id = ?", userId)
+
+	if len(payload.Allergies) > 0 {
+		var newAllergies []models.Allergy
+		if err := db.Where(query, payload.Allergies).Find(&newAllergies).Error; err != nil {
+			return err
+		}
+		db.Model(&bioData).Association("Allergies").Append(newAllergies)
+	}
+
+	// Remove Allergies
+	if len(payload.RemoveAllergies) > 0 {
+		var removeAllergies []models.Allergy
+		if err := db.Where(query, payload.RemoveAllergies).Find(&removeAllergies).Error; err != nil {
+			return err
+		}
+		db.Model(&bioData).Association("Allergies").Delete(removeAllergies)
+	}
+
+	if len(payload.HealthConditions) > 0 {
+		var newHealthConditions []models.HealthCondition
+		if err := db.Where(query, payload.HealthConditions).Find(&newHealthConditions).Error; err != nil {
+			return err
+		}
+		db.Model(&bioData).Association("HealthConditions").Append(newHealthConditions)
+	}
+
+	// Remove Health Conditions
+	if len(payload.RemoveHealthConditions) > 0 {
+		var removeHealthConditions []models.HealthCondition
+		if err := db.Where(query, payload.RemoveHealthConditions).Find(&removeHealthConditions).Error; err != nil {
+			return err
+		}
+		db.Model(&bioData).Association("HealthConditions").Delete(removeHealthConditions)
+	}
+
+	return nil
 }

@@ -25,8 +25,10 @@ type LoginRequestPayload struct {
 }
 
 type UpdateUser struct {
-	FullName string `json:"full_name" validate:"required"`
-	Email    string `json:"email" validate:"email"`
+	FullName    string `json:"full_name" validate:"required"`
+	PhoneNumber string `json:"phone_number" validate:"required,e164"`
+	DOB         string `json:"dob" validate:"required"`
+	Email       string `json:"email" validate:"email"`
 }
 
 type ForgotPasswordRequestPayload struct {

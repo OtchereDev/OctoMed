@@ -7,7 +7,10 @@ type SessionData = {
 
 type SessionFlashData = {
   error: string
+  toast: string
 }
+
+// TODO: expire user session in 24hrs
 
 const { getSession, commitSession, destroySession } = createCookieSessionStorage<
   SessionData,

@@ -1,9 +1,19 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
-import { Link, MetaFunction, json, redirect } from '@remix-run/react'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import { Form, MetaFunction, json, redirect, useActionData, useLoaderData } from '@remix-run/react'
+import { useEffect } from 'react'
+import Avatar from '~/components/auth/Avatar'
+import OnboardingFormButton from '~/components/auth/OnboardingFormButton'
+import SaveAndContinue from '~/components/auth/SaveAndContinue'
 import Input from '~/components/shared/Input'
 import Stepper from '~/components/shared/Stepper'
-import { BackArrow, Person } from '~/components/shared/icons'
+import { toast } from '~/components/ui/use-toast'
+import { BioDataDTO } from '~/dto/user.dto'
+import calcAge from '~/lib/calculateAge'
+import { IError, formatZodErrors } from '~/lib/formatZodError'
+import { getFormError } from '~/lib/getFormError'
 import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
+import { bioData, getCurrentUserDetail } from '~/server/user.server'
+import { getSession } from '~/sessions'
 
 export const meta: MetaFunction = () => [
   {
@@ -20,19 +30,75 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/')
   }
 
-  return json({})
+  const session = await getSession(request.headers.get('Cookie'))
+  const accessToken = session.get('accessToken')
+
+  const response = await getCurrentUserDetail(accessToken as string)
+
+  return json({
+    user: response.user!,
+  })
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData()
+  const avatar = formData.get('avatar') ?? ''
+  const height = formData.get('height') ?? ''
+  const height_metric = formData.get('height_metric') ?? ''
+  const weight = formData.get('weight') ?? ''
+  const weight_metric = formData.get('weight_metric') ?? ''
+
+  const session = await getSession(request.headers.get('Cookie'))
+
+  try {
+    const result = BioDataDTO.parse({
+      avatar,
+      height: parseFloat(height as string),
+      height_metric,
+      weight: parseFloat(weight as string),
+      weight_metric,
+    })
+
+    const response = await bioData(result, session.get('accessToken') as string)
+    if (response.status) {
+      session.flash('toast', 'Successfully added biodata')
+
+      return redirect('/onboarding/health-details')
+    } else {
+      return json({
+        errors: [] as IError[],
+        response: response.message,
+      })
+    }
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+      })
+    }
+  }
 }
 
 export default function Biodata() {
+  const { user } = useLoaderData<typeof loader>()
+  const response = useActionData<typeof action>()
+
+  useEffect(() => {
+    if (response?.response) {
+      toast({
+        title: 'Onboarding',
+        description: response?.response,
+      })
+    }
+  }, [response])
   return (
     <section className="mt-14 lg:mt-0">
-      <Link
-        to={'/signup'}
-        className="mt-[10px] hidden text-right font-montserrat font-semibold text-[#191919] lg:block"
+      <SaveAndContinue />
+      <Form
+        method="POST"
+        className="lg:relative lg:mx-auto lg:mt-[80px] lg:max-w-[700px] lg:pb-[190px]"
       >
-        <p className="">Save and continue later</p>
-      </Link>
-      <section className="lg:relative lg:mx-auto lg:mt-[80px] lg:max-w-[700px] lg:pb-[190px]">
         <Stepper stage={1} title="01 - Personal Info" />
         <h1 className="mt-[30px] font-raleway font-bold text-primary lg:text-2xl">
           Provide your personal details
@@ -42,18 +108,18 @@ export default function Biodata() {
         </h3>
 
         <div className="mt-[30px] flex items-center gap-10 lg:mt-[40px]">
-          <div className="flex h-[100px] w-[100px] items-center justify-center overflow-hidden rounded-full bg-[#1382a2] bg-opacity-10">
-            <Person className="size-16 text-primary opacity-50" />
-          </div>
-          <button className="relative rounded-primary border-[1.5px] border-primary px-[35px] py-[10px] font-raleway text-sm font-bold text-primary">
-            Upload
-            <input type="file" className="absolute left-0 top-0 h-full w-full opacity-0" />
-          </button>
+          <Avatar name="avatar" />
         </div>
 
         <div className="lg: mt-[30px] flex flex-col items-start gap-y-[30px] lg:mt-[40px] lg:grid lg:grid-cols-2 lg:gap-x-[30px]">
-          <div>
-            <Input label="Age" type="text" name="age" />
+          <div className="w-full">
+            <Input
+              defaultValue={calcAge(new Date(user?.dob))}
+              disabled
+              label="Age"
+              type="text"
+              name="age"
+            />
             <div className="mt-2 flex items-center gap-1 text-xs text-[#667085]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -71,39 +137,40 @@ export default function Biodata() {
             </div>
           </div>
 
-          <div className="flex items-start gap-[15px]">
+          <div className="flex w-full items-start gap-[15px]">
             <select
               className="w-[98px] rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm text-[#191919] lg:py-[15px]"
-              name=""
-              id=""
+              name="weight_metric"
             >
-              <option value="">KG</option>
+              <option value="KG">KG</option>
+              <option value="G">G</option>
             </select>
-            <Input type="number" label="Weight" name="weight" />
+            <Input
+              type="number"
+              label="Weight"
+              name="weight"
+              error={getFormError('weight', response?.errors)}
+            />
           </div>
-          <div className="flex items-start gap-[15px]">
+          <div className="flex w-full items-start gap-[15px]">
             <select
               className="w-[98px] rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm text-[#191919] lg:py-[15px]"
-              name=""
-              id=""
+              name="height_metric"
             >
-              <option value="">CM</option>
+              <option value="CM">CM</option>
+              <option value="M">M</option>
             </select>
-            <Input type="number" label="Height" name="height" />
+            <Input
+              type="number"
+              label="Height"
+              name="height"
+              error={getFormError('height', response?.errors)}
+            />
           </div>
         </div>
 
-        <div className="bottom-0 left-0 mt-20 flex justify-between border-t pb-10 pt-9 lg:absolute lg:w-full">
-          <button className="flex items-center gap-5 font-raleway text-[20px] font-bold text-[#8c8c8c]">
-            <BackArrow />
-            Back
-          </button>
-
-          <button className="rounded-primary bg-[#1282A2] px-[63px] py-[17px] font-raleway font-bold text-white">
-            Next
-          </button>
-        </div>
-      </section>
+        <OnboardingFormButton backLink="" />
+      </Form>
     </section>
   )
 }

@@ -7,25 +7,29 @@ export default function Input({
   name,
   error,
   callback,
+  disabled,
+  defaultValue,
 }: {
   label: string
   type: string
   name: string
   error?: string
   callback?: (val: string) => void
+  disabled?: boolean
+  defaultValue?: string
 }) {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(defaultValue ?? '')
   const [isOpen, setIsOpen] = useState(false)
 
   const togglePassword = () => {
     setIsOpen((iso) => !iso)
   }
   return (
-    <div>
+    <div className="flex-1">
       <div
         className={`input-group flex flex-1 rounded-primary border border-[#667085] font-poppins ${
           value?.length > 0 ? 'isFilled' : ''
-        }`}
+        } ${disabled ? 'bg-[#f1f2f5]' : ''} `}
       >
         <input
           value={value}
@@ -36,6 +40,7 @@ export default function Input({
           type={isOpen ? 'text' : type}
           className="w-full"
           name={name}
+          disabled={disabled}
         />
         <label className="">{label}</label>
 

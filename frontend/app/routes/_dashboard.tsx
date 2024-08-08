@@ -1,7 +1,8 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node'
-import { Link, Outlet, redirect } from '@remix-run/react'
+import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node'
+import { Link, NavLink, Outlet, redirect } from '@remix-run/react'
 import { useState } from 'react'
 import SideImage from '~/assets/images/dashboard-sidebar.svg'
+import NotificationSheet from '~/components/shared/NotificationSheet'
 import SignoutButton from '~/components/shared/Signout'
 import {
   Bell,
@@ -81,6 +82,16 @@ const links = [
   },
 ]
 
+export const meta: MetaFunction = () => [
+  {
+    title: 'OctoMed | Your AI Health Assistant',
+  },
+  {
+    name: 'description',
+    content: 'Your AI Health Assistant',
+  },
+]
+
 export default function DashboardLayout() {
   const [selected, setSelected] = useState('Dashboard')
   return (
@@ -95,13 +106,18 @@ export default function DashboardLayout() {
           <div className="mt-[40px] flex flex-1 flex-col justify-between px-6">
             <div className="flex flex-col gap-5">
               {links.map(({ link, Icon, title }) => (
-                <div
+                <NavLink
                   key={title}
-                  className={`flex cursor-pointer items-center gap-3 rounded-full bg-opacity-20 px-[24px] py-[10px] ${selected == title ? 'bg-[#1282A2] font-semibold text-primary' : 'text-[#4D5061]'}`}
+                  to={link}
+                  className={({ isActive }) =>
+                    (isActive ? 'bg-[#1282A2] font-semibold text-primary' : 'text-[#4D5061]') +
+                    ' flex cursor-pointer items-center gap-3 rounded-full bg-opacity-20 px-[24px] py-[10px] hover:bg-[#1282A2] hover:bg-opacity-30 hover:text-primary'
+                  }
+                  end
                 >
                   <Icon />
                   <p className="font-montserrat text-sm">{title}</p>
-                </div>
+                </NavLink>
               ))}
             </div>
 
@@ -119,7 +135,9 @@ export default function DashboardLayout() {
           </p>
 
           <div className="flex items-center gap-5">
-            <Bell className="size-6 cursor-pointer text-gray-500" />
+            <NotificationSheet>
+              <Bell className="size-6 cursor-pointer text-gray-500" />
+            </NotificationSheet>
             <Link to={'/profile'}>
               <div className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-gray-600 text-gray-500">
                 <User className="size-5" />
@@ -128,20 +146,24 @@ export default function DashboardLayout() {
           </div>
         </nav>
 
-        <section className="flex-1 overflow-scroll pb-32 pt-20 lg:pt-0">
+        <section className="flex-1 overflow-scroll pt-20 lg:pt-0">
           <Outlet />
         </section>
 
         <aside className="fixed bottom-0 left-0 flex w-full justify-between border-t bg-white px-[30px] py-[17px] lg:hidden">
           {links.slice(0, 3).map(({ Icon, title, link }) => (
-            <div key={title} className="flex cursor-pointer flex-col items-center">
+            <NavLink
+              to={link}
+              key={title}
+              className={({ isActive }) =>
+                (isActive ? 'font-semibold text-primary' : '') +
+                ' flex cursor-pointer flex-col items-center'
+              }
+              end
+            >
               <Icon />
-              <p
-                className={`mt-[13px] font-poppins text-[10px] ${selected == title ? 'font-semibold text-primary' : ''} `}
-              >
-                {title}
-              </p>
-            </div>
+              <p className={`mt-[13px] font-poppins text-[10px] hover:text-primary`}>{title}</p>
+            </NavLink>
           ))}
           <Drawer>
             <DrawerTrigger>
@@ -154,12 +176,17 @@ export default function DashboardLayout() {
               <DrawerHeader>
                 <DrawerDescription className="flex flex-col divide-y">
                   {links.slice(3).map(({ Icon, title, link }) => (
-                    <Link to={link} className="pb-4">
-                      <div className="mt-3 flex items-center gap-4 rounded-lg px-3 py-4 font-montserrat hover:bg-gray-100">
-                        <Icon />
-                        <p>{title}</p>
-                      </div>
-                    </Link>
+                    <NavLink
+                      to={link}
+                      key={title}
+                      className={({ isActive }) =>
+                        (isActive ? 'bg-gray-300 text-black' : '') +
+                        'mt-3 flex items-center gap-4 rounded-lg px-3 py-4 font-montserrat hover:bg-gray-100'
+                      }
+                    >
+                      <Icon />
+                      <p>{title}</p>
+                    </NavLink>
                   ))}
                 </DrawerDescription>
               </DrawerHeader>

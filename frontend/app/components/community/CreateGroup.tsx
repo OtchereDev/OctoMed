@@ -8,7 +8,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export default function CreateGroup({ children }: { children: React.ReactNode }) {
   return (
     <Dialog>
-      <DialogPrimitive.DialogTrigger>{children}</DialogPrimitive.DialogTrigger>
+      <DialogPrimitive.DialogTrigger className="w-full lg:w-auto">
+        {children}
+      </DialogPrimitive.DialogTrigger>
       <DialogContent className="w-[calc(100%-20px)] !rounded-[20px] text-left lg:!w-[723px]">
         <DialogHeader>
           <DialogTitle className="text-left font-montserrat font-bold">Create A Group</DialogTitle>

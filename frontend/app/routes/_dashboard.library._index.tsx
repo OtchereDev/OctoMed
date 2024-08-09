@@ -2,9 +2,10 @@ import { Search } from 'lucide-react'
 
 export default function Library() {
   return (
-    <section className="pt-8">
+    <section className="px-5 pb-28 pt-5 font-montserrat lg:px-0 lg:pt-8">
+      <h3 className="mb-4 text-xl font-semibold lg:hidden">Library</h3>
       <div className="font-montserrat lg:flex lg:w-full lg:items-center lg:justify-between">
-        <h3 className="font-semibold text-[#333]">Explore Our Library</h3>
+        <h3 className="mb-4 font-semibold text-[#333] lg:mb-0">Explore Our Library</h3>
         <div className="flex gap-2">
           <div className="flex flex-1 items-center gap-3 rounded-primary border px-[14px] py-[10px] lg:w-[418px]">
             <Search strokeWidth={2.5} size={18} />
@@ -14,7 +15,7 @@ export default function Library() {
               className="flex-1 font-montserrat outline-none placeholder:font-montserrat"
             />
           </div>
-          <button className="flex w-auto items-center gap-2 rounded-primary border px-5 py-3 font-montserrat text-sm font-semibold text-[#353746]">
+          <button className="flex items-center gap-2 rounded-primary border px-5 py-3 font-montserrat text-xs font-semibold text-[#353746] lg:w-auto lg:text-sm">
             <Search size={18} color="#353746" strokeWidth={3} />
             Search
           </button>
@@ -31,9 +32,9 @@ export default function Library() {
           Topic 2
         </button>
       </div>
-      <div className="mt-[20px] grid grid-cols-4 gap-4">
+      <div className="mt-[20px] grid gap-4 lg:grid-cols-4">
         {Array.from({ length: 5 }).map((_, idx) => (
-          <div className="rounded-[20px] border p-3" key={idx}>
+          <div className="w-full rounded-[20px] border p-3" key={idx}>
             <div className="h-[150px] w-full rounded-[10px] bg-gray-100"></div>
             <div className="mt-3 flex flex-col gap-3 font-montserrat">
               <h3 className="font-bold text-[#191919]">Article Title Goes Here</h3>

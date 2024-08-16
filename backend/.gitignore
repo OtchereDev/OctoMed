@@ -1,6 +1,7 @@
 /.cache
 /build
 .env
-api
 main
 .vscode
+api
+!api/

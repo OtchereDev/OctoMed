@@ -141,3 +141,193 @@ func RescheduleAppointment(c *fiber.Ctx, app AppointmentApp) error {
 		}},
 	)
 }
+
+func CancelAppointment(c *fiber.Ctx, app AppointmentApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+	appointmentID, err := c.ParamsInt("id")
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	err = app.CancelAppointment(userId, appointmentID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message": "Successfully cancelled appointment",
+		}},
+	)
+
+}
+
+func DeleteAppointment(c *fiber.Ctx, app AppointmentApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+	appointmentID, err := c.ParamsInt("id")
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	err = app.DeleteAppointment(userId, appointmentID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message": "Successfully deleted appointment",
+		}},
+	)
+
+}
+
+func AppointmentDetail(c *fiber.Ctx, app AppointmentApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+	appointmentID, err := c.ParamsInt("id")
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	appt, err := app.GetAppointmentDetails(userId, appointmentID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message":     "Successfully fetched appointment",
+			"appointment": appt,
+		}},
+	)
+
+}
+
+func GetMeetingLink(c *fiber.Ctx, app AppointmentApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+	appointmentID, err := c.ParamsInt("id")
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	ml, err := app.GetOrGenerateMeetingLink(userId, appointmentID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message":      "Successfully fetched appointment meeting link",
+			"meeting_link": ml,
+		}},
+	)
+
+}
+
+func LeaveAReview(c *fiber.Ctx, app AppointmentApp) error {
+	var rating models.Rating
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	// Parse the JSON payload
+	if err := c.BodyParser(&rating); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  400,
+			"message": "Errors",
+			"data":    &fiber.Map{"errors": "Cannot parse JSON"},
+		})
+	}
+
+	// Validate the rating
+	if rating.Rate < 1 || rating.Rate > 5 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  400,
+			"message": "Errors",
+			"data":    &fiber.Map{"errors": "Rate must be between 1 and 5"},
+		})
+	}
+
+	if validationErr := app.Validate.Struct(&rating); validationErr != nil {
+		return c.Status(http.StatusBadRequest).
+			JSON(fiber.Map{
+				"status":  400,
+				"message": "Errors",
+				"data":    &fiber.Map{"errors": validate.SerializeErrors(validationErr)}},
+			)
+	}
+
+	rating.UserID = uint(userId)
+	err := app.LeaveAReview(rating)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message": "Successfully added review",
+		}},
+	)
+}

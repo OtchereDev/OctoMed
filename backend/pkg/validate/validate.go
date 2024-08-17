@@ -5,7 +5,6 @@ import (
 )
 
 func SerializeErrors(validationErr error) map[string]string {
-
 	var errorResponse = make(map[string]string)
 
 	for _, err := range validationErr.(validator.ValidationErrors) {

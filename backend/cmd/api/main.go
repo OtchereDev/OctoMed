@@ -12,6 +12,8 @@ import (
 	"github.com/joho/godotenv"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/appointment"
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/doctor"
 	healthinfo "github.com/OtchereDev/ProjectAPI/cmd/api/resources/health-info"
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/storage"
 	u "github.com/OtchereDev/ProjectAPI/cmd/api/resources/user"
@@ -21,8 +23,10 @@ import (
 )
 
 type Application struct {
-	Users      *u.UserApp
-	HealthInfo *healthinfo.HealthApp
+	Users       *u.UserApp
+	HealthInfo  *healthinfo.HealthApp
+	Doctor      *doctor.DoctorApp
+	Appointment *appointment.AppointmentApp
 }
 
 // @title OctoMed
@@ -80,11 +84,23 @@ func main() {
 			App:      app,
 			Validate: validate,
 		},
+		Doctor: &doctor.DoctorApp{
+			DB:       db,
+			App:      app,
+			Validate: validate,
+		},
+		Appointment: &appointment.AppointmentApp{
+			DB:       db,
+			App:      app,
+			Validate: validate,
+		},
 	}
 
 	// routes
 	s.Users.UserRoutes()
 	s.HealthInfo.HealthConditionRoutes()
+	s.Doctor.DoctorRoutes()
+	s.Appointment.AppointmentRoutes()
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	app.Listen(*addr)

@@ -55,12 +55,17 @@ func OpenDB() (*gorm.DB, error) {
 func MigrateDB(db *gorm.DB) {
 	db.AutoMigrate(
 		&models.User{},
-		// &models.BioData{},
-		// &models.ForgotPassword{},
-		// &models.Address{},
-		// &models.EmergencyContact{},
-		// &models.HealthCondition{},
-		// &models.Allergy{},
+		&models.BioData{},
+		&models.ForgotPassword{},
+		&models.Address{},
+		&models.EmergencyContact{},
+		&models.HealthCondition{},
+		&models.Allergy{},
+		&models.Doctor{},
+		&models.Education{},
+		&models.Experience{},
+		&models.Appointment{},
+		&models.Rating{},
 	)
 	healthinfo.MigrateHealthCondition(db)
 }

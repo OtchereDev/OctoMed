@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
 export default function HealthProviders() {
   return (
-    <section className="px-4 pt-4">
+    <section className="px-4 pb-28 pt-4">
       <Tabs defaultValue="providers" className="box-border w-full">
         <TabsList className="flex w-full justify-start !gap-12 rounded-none border-b border-[#D0D5DD] !bg-none px-0 pb-[25px] pt-4 font-montserrat font-bold">
           <TabsTrigger

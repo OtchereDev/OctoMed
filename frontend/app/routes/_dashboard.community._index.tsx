@@ -8,9 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 
 export default function Community() {
   return (
-    <section className="lg:pt-5">
+    <section className="px-5 pb-28 pt-5 font-montserrat lg:px-0">
       <div className="relative w-full rounded-[16px] border">
-        <div className="relative h-full min-h-[150px] w-full overflow-hidden rounded-[16px] px-6 py-[18px]">
+        <div className="relative h-full min-h-[117px] w-full overflow-hidden rounded-[16px] px-6 py-[18px] lg:min-h-[150px]">
           <img
             className="absolute left-0 top-0 h-full w-full object-cover"
             src="https://images.pexels.com/photos/3714743/pexels-photo-3714743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
@@ -20,12 +20,12 @@ export default function Community() {
             <div>
               <div className="font-montserrat font-semibold text-white">
                 <h3 className="lg:text-lg">Hi, Daniel</h3>
-                <p className="mt-3 text-sm">
+                <p className="mt-1 text-sm lg:mt-3">
                   Would you like to share something with the community?
                 </p>
               </div>
             </div>
-            <div className="flex justify-end gap-4">
+            <div className="hidden justify-end gap-4 lg:flex">
               <CreatePost>
                 <button className="flex items-center gap-[10px] rounded-primary bg-primary px-7 py-3 font-bold text-white lg:w-auto lg:flex-none lg:px-8">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed">
@@ -45,14 +45,32 @@ export default function Community() {
             </div>
           </div>
         </div>
-        <Avatar className="absolute bottom-0 left-8 h-[82px] w-[82px] translate-y-1/2 border-4 border-white">
+        <Avatar className="absolute -bottom-2 left-4 h-[62px] w-[62px] translate-y-1/2 border-4 border-white lg:bottom-0 lg:left-8 lg:h-[82px] lg:w-[82px]">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>
 
-      <div className="mt-[48px]">
-        <div className="flex justify-end gap-2">
+      <div className="mt-[70px] lg:mt-[48px]">
+        <div className="mb-6 flex items-center justify-end gap-4 lg:hidden">
+          <CreatePost>
+            <button className="flex w-full flex-1 items-center justify-center gap-2 rounded-primary bg-primary py-3 text-center text-sm font-bold text-white lg:w-auto lg:flex-none lg:px-8">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed">
+                <Plus />
+              </div>
+              Create A Post
+            </button>
+          </CreatePost>
+          <CreateGroup>
+            <button className="flex w-full flex-1 items-center justify-center gap-2 rounded-primary border-2 border-primary py-3 text-sm font-bold text-primary lg:w-auto lg:flex-none lg:px-8">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed border-primary">
+                <Plus />
+              </div>
+              Create A Group
+            </button>
+          </CreateGroup>
+        </div>
+        <div className="hidden justify-end gap-2 lg:flex">
           <div className="flex items-center gap-3 rounded-primary border px-[14px] py-[10px] lg:w-[418px]">
             <Search strokeWidth={2.5} size={18} />
             <input
@@ -63,20 +81,20 @@ export default function Community() {
           </div>
         </div>
 
-        <div className="mt-[22px] flex gap-[46px] font-montserrat">
-          <div className="flex-[1.35] rounded-[20px] border border-[#D9D9D9] p-[25px]">
+        <div className="mt-[22px] flex flex-col gap-[46px] font-montserrat lg:flex-row">
+          <div className="flex-[1.35] rounded-[20px] border-[#D9D9D9] lg:border lg:p-[25px]">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[#333]">Your Recent Posts</h2>
               <Link to={'/'} className="text-sm font-bold text-primary underline">
                 View Community Posts
               </Link>
             </div>
-            <div className="mt-[39px] flex items-center gap-[15px]">
+            <div className="mt-[39px] flex flex-col gap-[15px] lg:flex-row lg:items-center">
               <p className="text-sm font-medium">Filter by:</p>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 overflow-scroll">
                 {['General Health', 'Diet', 'Fitness', 'Other'].map((i, idx) => (
                   <span
-                    className={`rounded-full ${idx == 0 ? 'bg-[#09AEF21A]' : 'bg-[#F2F4F7]'} px-[10px] py-[2px] text-sm font-medium text-primary`}
+                    className={`flex-shrink-0 rounded-full ${idx == 0 ? 'bg-[#09AEF21A]' : 'bg-[#F2F4F7]'} px-[10px] py-[2px] text-sm font-medium text-primary`}
                     key={i}
                   >
                     {i}
@@ -92,8 +110,8 @@ export default function Community() {
             </div>
           </div>
 
-          <div className="flex-1 flex-col rounded-[20px] border border-[#D9D9D9]">
-            <div className="flex items-center justify-between border-b px-[25px] py-[22px]">
+          <div className="flex-1 flex-col rounded-[20px] border-[#D9D9D9] lg:border">
+            <div className="mb-5 flex items-center justify-between lg:mb-0 lg:border-b lg:px-[25px] lg:py-[22px]">
               <h2 className="text-lg font-semibold text-[#333]">Groups</h2>
               <Link
                 to={'/community/groups'}
@@ -103,7 +121,7 @@ export default function Community() {
                 Explore Groups
               </Link>
             </div>
-            <div className="flex max-h-[580px] flex-1 flex-col gap-8 overflow-y-scroll p-[25px]">
+            <div className="flex max-h-[580px] flex-1 flex-col gap-8 overflow-y-scroll lg:p-[25px]">
               <div className="rounded-[12px] bg-[#D0D5DD4D] p-[18px]">
                 <div className="flex items-center justify-between">
                   <p className="font-semibold text-[#4D5061]">Diabeaters</p>

@@ -16,6 +16,7 @@ import (
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/bot"
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/doctor"
 	healthinfo "github.com/OtchereDev/ProjectAPI/cmd/api/resources/health-info"
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/library"
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/storage"
 	u "github.com/OtchereDev/ProjectAPI/cmd/api/resources/user"
 	_ "github.com/OtchereDev/ProjectAPI/docs"
@@ -29,6 +30,7 @@ type Application struct {
 	Doctor      *doctor.DoctorApp
 	Appointment *appointment.AppointmentApp
 	BotApp      *bot.BotApp
+	LibraryApp  *library.LibraryApp
 }
 
 // @title OctoMed
@@ -101,6 +103,11 @@ func main() {
 			App:      app,
 			Validate: validate,
 		},
+		LibraryApp: &library.LibraryApp{
+			DB:       db,
+			App:      app,
+			Validate: validate,
+		},
 	}
 
 	// routes
@@ -109,6 +116,7 @@ func main() {
 	s.Doctor.DoctorRoutes()
 	s.Appointment.AppointmentRoutes()
 	s.BotApp.BotRoutes()
+	s.LibraryApp.LibraryRoutes()
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	app.Listen(*addr)

@@ -11,6 +11,7 @@ import (
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/storage"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 	"github.com/OtchereDev/ProjectAPI/pkg/swagger"
+	"github.com/OtchereDev/ProjectAPI/pkg/utils"
 )
 
 func (u UserApp) CreateUser(data models.User) (*models.User, error) {
@@ -25,7 +26,7 @@ func (u UserApp) CreateUser(data models.User) (*models.User, error) {
 		return nil, errors.New("user with this email already exist")
 	}
 
-	hashedPassword, err := HashPassword(data.Password)
+	hashedPassword, err := utils.HashPassword(data.Password)
 
 	if err != nil {
 		return nil, err
@@ -132,7 +133,7 @@ func (u UserApp) LoginUser(email string, password string) (string, *models.User,
 		return "", nil, errors.New("invalid credientials")
 	}
 
-	err := CompareUserPassword(password, user.Password)
+	err := utils.CompareUserPassword(password, user.Password)
 
 	user.LastLogin = time.Now()
 
@@ -142,14 +143,14 @@ func (u UserApp) LoginUser(email string, password string) (string, *models.User,
 		return "", nil, errors.New("invalid credientials")
 	}
 
-	var jwtPayload = JwtPayload{
+	var jwtPayload = utils.JwtPayload{
 		Name:     user.FullName,
 		Email:    user.Email,
 		UserType: "user",
 		UserID:   fmt.Sprint(user.ID),
 	}
 
-	accessToken, err := GenerateJWT(jwtPayload)
+	accessToken, err := utils.GenerateJWT(jwtPayload)
 
 	if err != nil {
 		return "", nil, err
@@ -170,7 +171,7 @@ func (u UserApp) RequestForgotPassword(data ForgotPasswordRequestPayload) error 
 		return errors.New("user does not exist")
 	}
 
-	code := GenerateCode(10)
+	code := utils.GenerateCode(10)
 
 	request := models.ForgotPassword{
 		UserID: existingUser.ID,
@@ -200,7 +201,7 @@ func (u UserApp) ResetPassword(data ResetPasswordPayload) error {
 		return errors.New("token does not exist")
 	}
 
-	hashedPassword, err := HashPassword(data.Password)
+	hashedPassword, err := utils.HashPassword(data.Password)
 
 	if err != nil {
 		return err

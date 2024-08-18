@@ -111,7 +111,7 @@ export default function DashboardLayout() {
                   to={link}
                   className={({ isActive }) =>
                     (isActive ? 'bg-[#1282A2] font-semibold text-primary' : 'text-[#4D5061]') +
-                    ' flex cursor-pointer items-center gap-3 rounded-full bg-opacity-20 px-[24px] py-[10px] hover:bg-[#1282A2] hover:bg-opacity-30 hover:text-primary'
+                    ' flex cursor-pointer items-center gap-3 text-nowrap rounded-full bg-opacity-20 px-[24px] py-[10px] hover:bg-[#1282A2] hover:bg-opacity-30 hover:text-primary'
                   }
                   end
                 >

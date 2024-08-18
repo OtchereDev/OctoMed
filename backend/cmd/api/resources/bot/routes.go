@@ -10,7 +10,7 @@ func (a BotApp) BotRoutes() {
 	a.App.Get("/bot/chats", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return GetAllMyChats(c, a)
 	})
-	a.App.Post("/bot/chat", func(c *fiber.Ctx) error {
+	a.App.Post("/bot/chats", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return CreateChat(c, a)
 	})
 
@@ -18,7 +18,7 @@ func (a BotApp) BotRoutes() {
 		return GetDetailsOfMyChat(c, a)
 	})
 
-	a.App.Post("bot/chats/:id", func(c *fiber.Ctx) error {
+	a.App.Post("bot/chats/:id", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return MessageOpenAI(c, a)
 	})
 }

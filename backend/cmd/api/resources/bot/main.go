@@ -11,3 +11,9 @@ type BotApp struct {
 	App      *fiber.App
 	Validate *validator.Validate
 }
+
+type ChatRequest struct {
+	ChatID  uint   `json:"chat_id"`
+	UserID  uint   `json:"user_id"`
+	Content string `json:"content"`
+}

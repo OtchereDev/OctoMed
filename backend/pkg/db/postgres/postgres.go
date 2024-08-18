@@ -66,6 +66,7 @@ func MigrateDB(db *gorm.DB) {
 		&models.Experience{},
 		&models.Appointment{},
 		&models.Rating{},
+		&models.Resource{},
 	)
 	healthinfo.MigrateHealthCondition(db)
 }

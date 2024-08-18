@@ -11,3 +11,9 @@ type LibraryApp struct {
 	App      *fiber.App
 	Validate *validator.Validate
 }
+
+type ResourceListParam struct {
+	Page     int
+	Category string
+	Search   string
+}

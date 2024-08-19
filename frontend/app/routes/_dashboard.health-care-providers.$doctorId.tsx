@@ -1,20 +1,98 @@
-import { Link } from '@remix-run/react'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import { Link, json, useLoaderData } from '@remix-run/react'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import { ArrowLeft, BriefcaseBusiness, GraduationCap, MapPin, Star } from 'lucide-react'
-import Cambridge from '~/assets/images/cambridge.png'
-import United from '~/assets/images/united-hosiptal.png'
 import LeaveReview from '~/components/health-providers/LeaveReview'
 import { Star as StarIcon } from '~/components/shared/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { RateDTO } from '~/dto/providers.dto'
+import { IError, formatZodErrors } from '~/lib/formatZodError'
+import http from '~/lib/http'
+import { getSession } from '~/sessions'
+import { IDoctor } from '~/types/health-provider'
+
+dayjs.extend(relativeTime)
+
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  let doctor: IDoctor | null = null
+
+  let route = `/doctors/${params.doctorId}`
+
+  try {
+    const req = await http.get(route)
+
+    const data = req.data
+
+    doctor = data.data.doctor
+
+    return json({
+      doctor,
+      message: data.data.message,
+    })
+  } catch (error: any) {
+    let message: string = error.response.data?.message ?? error.message
+
+    return json({
+      doctor,
+      message,
+    })
+  }
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const formData = await request.formData()
+  const comment = formData.get('comment') ?? ''
+  const rate = formData.get('rate') ? parseInt(formData.get('rate') as string) : 0
+  const doctor_id = parseInt(params['doctorId'] as string)
+
+  const session = await getSession(request.headers.get('Cookie'))
+
+  try {
+    const result = RateDTO.parse({
+      comment,
+      rate,
+    })
+
+    const response = await http.post(
+      '/rating/create',
+      { ...result, doctor_id },
+      {
+        headers: {
+          Authorization: `Bearer ${session.get('accessToken')}`,
+        },
+      }
+    )
+
+    return json({
+      errors: [] as IError[],
+      response: response?.data.message,
+    })
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+      })
+    }
+
+    return json({
+      errors: [
+        { path: 'universal', message: error?.response?.data?.message ?? 'An error occurred' },
+      ] as IError[],
+      response: error?.response?.data?.message ?? 'An error occurred',
+    })
+  }
+}
 
 export default function DoctorProfile() {
+  const { doctor } = useLoaderData<typeof loader>()
+
   return (
-    <div className="px-5 pt-5">
+    <div className="px-5 pt-5 lg:pb-20">
       <div className="relative h-[150px] overflow-hidden rounded-[16px] p-4 lg:p-6">
-        <img
-          className="absolute left-0 top-0 h-full w-full object-cover"
-          src="https://images.pexels.com/photos/3714743/pexels-photo-3714743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-        />
+        <img className="absolute left-0 top-0 h-full w-full object-cover" src={doctor?.profile} />
         <div className="absolute left-0 top-0 h-full w-full bg-black bg-opacity-70" />
         <div className="relative flex h-full w-full flex-col justify-between">
           <Link to="/health-care-providers">
@@ -40,15 +118,12 @@ export default function DoctorProfile() {
       <div className="mt-6 lg:relative lg:-mt-7">
         <div className="flex gap-2 rounded-[20px] font-montserrat lg:ml-6 lg:items-end lg:gap-6">
           <div className="h-[102px] w-[102px] overflow-hidden rounded-primary lg:h-[114px] lg:w-[114px] lg:rounded-[16px] lg:border-[3px] lg:border-white">
-            <img
-              src="https://images.pexels.com/photos/3714743/pexels-photo-3714743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-              className="h-full w-full object-cover"
-            />
+            <img src={doctor?.profile} className="h-full w-full object-cover" />
           </div>
           <div className="flex flex-1 justify-between">
             <div>
               <h3 className="line-clamp-1 font-montserrat font-bold text-[#191919]">
-                Dr Daniel Everton - MD, FACOG
+                {doctor?.name} - {doctor?.title}
               </h3>
 
               <div className="mt-2 items-center gap-3 font-montserrat text-sm font-semibold text-[#4D5061]">
@@ -57,11 +132,11 @@ export default function DoctorProfile() {
                     <StarIcon />
                     <p className="">4.9(102)</p>
                   </div>
-                  <p className="mt-2 lg:order-1 lg:mt-0">Primary Care Doctor</p>
+                  <p className="mt-2 lg:order-1 lg:mt-0">{doctor?.specialty}</p>
                 </div>
                 <div className="mt-[6px] flex gap-[10px]">
                   <MapPin size={16} />
-                  <p>St Louis, MO</p>
+                  <p>{doctor?.hospital}</p>
                 </div>
               </div>
             </div>
@@ -83,55 +158,15 @@ export default function DoctorProfile() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="about" className="pt-6 text-justify font-montserrat text-[#4D5061]">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent rhoncus elit ac enim
-              faucibus convallis. Mauris et ex vel odio vehicula pretium. Sed non felis et neque
-              lobortis mattis non in tellus. Donec libero nunc, posuere id leo sit amet, consectetur
-              consequat metus. Pellentesque fringilla nec arcu a dapibus. Etiam eu luctus arcu.
-              Aliquam congue purus quis lobortis consequat. Pellentesque sed fringilla odio.
-              Pellentesque diam lacus, lobortis vel fringilla in, imperdiet eu enim. Phasellus
-              aliquam urna non nisi dictum, vel bibendum tellus pulvinar. Morbi aliquet tellus
-              sapien, ut placerat ligula vestibulum ut. Morbi faucibus vehicula ligula eu facilisis.
-              Cras sagittis eu arcu quis facilisis. Aliquam dictum id odio a placerat. Donec sed
-              massa efficitur, volutpat mauris in, orttitor turpis. Donec ut laoreet tortor. Nam at
-              fringilla erat, eget feugiat mauris. Praesent condimentum, ante sed tempus sagittis,
-              purus ex lacinia ligula, at suscipit urna arcu vitae urna. Nam porttitor sem enim, in
-              commodo ex placerat id. Morbi non massa luctus, blandit tellus in, maximus nisl.
-              Aliquam non ornare dolor. Ut quis venenatis tortor. Donec consequat gravida venenatis.
-              Curabitur condimentum arcu vitae velit egestas lobortis. Aliquam maximus ultricies
-              tristique. Pellentesque habitant morbi tristique senectus et netus et malesuada fames
-              ac turpis egestas. Suspendisse et lorem et nibh maximus condimentum at et mi. Fusce
-              malesuada lacus ante, non dictum massa vehicula eget. Aenean lorem purus, vulputate id
-              purus maximus, tempus pellentesque quam. Nam varius urna ac vehicula venenatis.
-            </p>
-
-            <p className="mt-6">
-              Praesent condimentum, ante sed tempus sagittis, purus ex lacinia ligula, at suscipit
-              urna arcu vitae urna. Nam porttitor sem enim, in commodo ex placerat id. Morbi non
-              massa luctus, blandit tellus in, maximus nisl. Aliquam non ornare dolor. Ut quis
-              venenatis tortor. Donec consequat gravida venenatis. Curabitur condimentum arcu vitae
-              velit egestas lobortis. Aliquam maximus ultricies tristique. Pellentesque habitant
-              morbi tristique senectus et netus et malesuada fames ac turpis egestas. Suspendisse et
-              lorem et nibh maximus condimentum at et mi. Fusce malesuada lacus ante, non dictum
-              massa vehicula eget. Aenean lorem purus, vulputate id purus maximus, tempus
-              pellentesque quam. Nam varius urna ac vehicula venenatis.
-            </p>
-            <p className="mt-6">
-              Praesent condimentum, ante sed tempus sagittis, purus ex lacinia ligula, at suscipit
-              urna arcu vitae urna. Nam porttitor sem enim, in commodo ex placerat id. Morbi non
-              massa luctus, blandit tellus in, maximus nisl. Aliquam non ornare dolor. Ut quis
-              venenatis tortor. Donec consequat gravida venenatis. Curabitur condimentum arcu vitae
-              velit egestas lobortis. Aliquam maximus ultricies tristique. Pellentesque habitant
-              morbi tristique senectus et netus et malesuada fames ac turpis egestas. Suspendisse et
-              lorem et nibh maximus condimentum at et mi. Fusce malesuada lacus ante, non dictum
-              massa vehicula eget. Aenean lorem purus, vulputate id purus maximus, tempus
-              pellentesque quam. Nam varius urna ac vehicula venenatis.
-            </p>
+            <div
+              className="flex flex-col gap-3"
+              dangerouslySetInnerHTML={{ __html: doctor?.about ?? '' }}
+            />
           </TabsContent>
           <TabsContent value="education">
             <div className="ml-6 mt-[30px] border-l border-[#E8F3F6] text-left font-montserrat lg:mt-10">
-              {[1, 2].map((i) => (
-                <div key={i} className="relative pb-6 pl-10 lg:mb-3">
+              {doctor?.educations.map((edu) => (
+                <div key={edu.id} className="relative pb-6 pl-10 lg:mb-3">
                   <div className="absolute left-0 top-0 flex h-[52px] w-[52px] -translate-x-1/2 items-center justify-center rounded-full border-4 border-white bg-[#E8F3F6] text-[#1282A2] lg:top-0">
                     <GraduationCap size={20} />
                   </div>
@@ -139,19 +174,18 @@ export default function DoctorProfile() {
                   <div className="mt-7 rounded-[20px] border lg:flex lg:items-start lg:justify-between lg:p-6">
                     <div className="p-3 lg:flex lg:w-full lg:gap-6 lg:p-0">
                       <div className="h-[150px] w-full overflow-hidden rounded-primary lg:h-[60px] lg:w-[94px]">
-                        <img src={Cambridge} className="h-full w-full object-cover" />
+                        <img src={edu.logo} className="h-full w-full object-cover" />
                       </div>
                       <div className="pt-6 lg:flex lg:flex-1 lg:justify-between lg:pt-0">
                         <div>
                           <h4 className="line-clamp-1 font-bold text-[#191919]">
-                            Cambridge University, Lapaz
+                            {edu.school}, {edu.country}
                           </h4>
-                          <p className="mt-1 text-sm font-semibold text-[#4D5061]">
-                            Masters of Medicine
-                          </p>
+                          <p className="mt-1 text-sm font-semibold text-[#4D5061]">{edu.course}</p>
                         </div>
                         <p className="mt-4 flex gap-4 text-sm font-bold text-[#4D5061] lg:mt-0">
-                          1994 - 2001
+                          {dayjs(edu.start_year).year()} -{' '}
+                          {edu.current_education ? 'Present' : dayjs(edu.end_year).year()}
                         </p>
                       </div>
                     </div>
@@ -162,8 +196,8 @@ export default function DoctorProfile() {
           </TabsContent>
           <TabsContent value="experience">
             <div className="ml-6 mt-[30px] border-l border-[#E8F3F6] text-left font-montserrat lg:mt-10">
-              {[1, 2].map((i) => (
-                <div key={i} className="relative pb-6 pl-10 lg:mb-3">
+              {doctor?.experiences.map((exp) => (
+                <div key={exp.id} className="relative pb-6 pl-10 lg:mb-3">
                   <div className="absolute left-0 top-0 flex h-[52px] w-[52px] -translate-x-1/2 items-center justify-center rounded-full border-4 border-white bg-[#E8F3F6] text-[#1282A2] lg:top-0">
                     <BriefcaseBusiness size={20} />
                   </div>
@@ -171,15 +205,20 @@ export default function DoctorProfile() {
                   <div className="mt-7 rounded-[20px] border lg:flex lg:items-start lg:justify-between lg:p-6">
                     <div className="p-3 lg:flex lg:w-full lg:gap-6 lg:p-0">
                       <div className="h-[150px] w-full overflow-hidden rounded-primary lg:h-[60px] lg:w-[94px]">
-                        <img src={United} className="h-full w-full object-cover" />
+                        <img src={exp.logo} className="h-full w-full object-cover" />
                       </div>
                       <div className="pt-6 lg:flex lg:flex-1 lg:justify-between lg:pt-0">
                         <div>
-                          <h4 className="line-clamp-1 font-bold text-[#191919]">United Hospital</h4>
-                          <p className="mt-1 text-sm font-semibold text-[#4D5061]">Senior Doctor</p>
+                          <h4 className="line-clamp-1 font-bold text-[#191919]">
+                            {exp.company}, {exp.country}
+                          </h4>
+                          <p className="mt-1 text-sm font-semibold text-[#4D5061]">
+                            {exp.position}
+                          </p>
                         </div>
                         <p className="mt-2 flex gap-4 text-sm font-bold text-[#4D5061] lg:mt-0">
-                          2002 - Present
+                          {dayjs(exp.start_year).year()} -{' '}
+                          {exp.current_position ? 'Present' : dayjs(exp.end_year).year()}
                         </p>
                       </div>
                     </div>
@@ -190,31 +229,32 @@ export default function DoctorProfile() {
           </TabsContent>
           <TabsContent value="review">
             <div className="mt-6 flex flex-col gap-4 lg:grid lg:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="rounded-[12px] border p-4">
+              {doctor?.ratings.map((rating) => (
+                <div key={rating.id} className="rounded-[12px] border p-4">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
-                      <AvatarImage src="https://github.com/shadcn.png" />
-                      <AvatarFallback>CN</AvatarFallback>
+                      <AvatarImage src={rating.user.avatar} />
+                      <AvatarFallback>{rating.user.full_name}</AvatarFallback>
                     </Avatar>
-                    <p className="font-montserrat text-sm font-medium">Daniel @Dannyboah96</p>
+                    <p className="font-montserrat text-sm font-medium">
+                      {rating.user.full_name} @Dannyboah96
+                    </p>
                   </div>
                   <div className="flex items-center py-3">
                     {Array.from({ length: 5 }).map((i) => (
                       <StarIcon />
                     ))}
                   </div>
-                  <p className="font-montserrat text-sm text-[#4D5061]">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent rhoncus elit
-                    ac enim faucibus convallis. Mauris et ex vel odio vehicula pretium. Sed non
-                    felis et neque lobortis mattis non in tellus. Donec libero nunc, posuere id leo
-                    sit amet, consectetur consequat metus. Pellentesque fringilla nec arcu a
-                    dapibus. Etiam eu luctus arcu. Aliquam congue purus quis lobortis consequat.
+                  <p className="font-montserrat text-sm text-[#4D5061]">{rating.comment}</p>
+                  <p className="mt-2 font-montserrat text-sm text-[#4D5061]">
+                    {dayjs(rating.created_at).fromNow()}
                   </p>
-                  <p className="mt-2 font-montserrat text-sm text-[#4D5061]">1 hour ago</p>
                 </div>
               ))}
             </div>
+            {doctor?.ratings.length == 0 && (
+              <p className="text-center font-semibold">No ratings yet</p>
+            )}
           </TabsContent>
         </Tabs>
       </div>

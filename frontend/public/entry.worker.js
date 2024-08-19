@@ -441,8 +441,8 @@ const routes = {
     path: "health-care-providers/:doctorId",
     index: void 0,
     caseSensitive: void 0,
-    hasLoader: false,
-    hasAction: false,
+    hasLoader: true,
+    hasAction: true,
     hasWorkerLoader: false,
     hasWorkerAction: false,
     module: route2

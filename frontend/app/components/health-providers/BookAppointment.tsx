@@ -1,4 +1,5 @@
 import { CalendarIcon, MapPin } from 'lucide-react'
+import { IDoctor } from '~/types/health-provider'
 import { Star } from '../shared/icons'
 import { Calendar } from '../ui/calendar'
 import {
@@ -10,7 +11,13 @@ import {
   DialogTrigger,
 } from '../ui/dialog'
 
-export default function BookAppointment({ children }: { children: React.ReactNode }) {
+export default function BookAppointment({
+  children,
+  doctor,
+}: {
+  children: React.ReactNode
+  doctor: IDoctor
+}) {
   return (
     <Dialog>
       <DialogTrigger className="w-full">{children}</DialogTrigger>
@@ -27,17 +34,14 @@ export default function BookAppointment({ children }: { children: React.ReactNod
 
           <div className="mt-[24px] flex gap-4 rounded-[20px] border border-[#D0D5DD99] p-3">
             <div className="h-[80px] w-[80px] overflow-hidden rounded-primary lg:h-[150px] lg:w-[234px]">
-              <img
-                src="https://images.pexels.com/photos/3714743/pexels-photo-3714743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                className="h-full w-full object-cover"
-              />
+              <img src={doctor.profile} className="h-full w-full object-cover" />
             </div>
             <div className="text-left">
               <h4 className="line-clamp-1 text-sm font-bold text-[#191919] lg:text-base">
-                Dr Daniel Everton - MD, FACOG
+                {doctor.name} - {doctor.title}
               </h4>
               <div className="mt-1 flex text-xs font-medium lg:mt-3 lg:gap-6 lg:text-sm">
-                <p>Primary Care Doctor</p>
+                <p>{doctor.specialty}</p>
                 <div className="flex items-center gap-2">
                   <Star />
                   <p>
@@ -47,7 +51,7 @@ export default function BookAppointment({ children }: { children: React.ReactNod
               </div>
               <div className="mt-1 flex items-center gap-2 font-medium lg:mt-3 lg:text-sm">
                 <MapPin size={15} />
-                <p>St Louis, MO</p>
+                <p>{doctor.hospital}</p>
               </div>
               <div className="mt-1 flex gap-4 text-xs lg:mt-3 lg:text-sm">
                 <p>Monday - Friday</p>

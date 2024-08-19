@@ -11,6 +11,7 @@ type Doctor struct {
 	About       string       `json:"about" validate:"required"`
 	Email       string       `json:"email" validate:"email"`
 	Password    string       `json:"-"`
+	Profile     string       `json:"profile" gorm:"default:"`
 	UserPass    string       `json:"password" gorm:"-" validate:"required"`
 	Experiences []Experience `json:"experiences" gorm:"foreignKey:DoctorID"`
 	Educations  []Education  `json:"educations" gorm:"foreignKey:DoctorID"`
@@ -26,6 +27,7 @@ type Experience struct {
 	Position        string    `json:"position" validate:"required"`
 	StartYear       time.Time `json:"start_year" validate:"required"`
 	EndYear         time.Time `json:"end_year"`
+	Country         string    `json:"country" validate:"required" gorm:"default:"`
 	CurrentPosition bool      `json:"current_position"`
 	DoctorID        uint      `json:"doctor_id"`
 	CreatedAt       time.Time `json:"created_at,omitempty" gorm:"autoCreateTime"`
@@ -40,6 +42,7 @@ type Education struct {
 	StartYear        time.Time `json:"start_year" validate:"required"`
 	EndYear          time.Time `json:"end_year"`
 	CurrentEducation bool      `json:"current_education"`
+	Country          string    `json:"country" validate:"required" gorm:"default:"`
 	DoctorID         uint      `json:"doctor_id"`
 	CreatedAt        time.Time `json:"created_at,omitempty" gorm:"autoCreateTime"`
 	UpdatedAt        time.Time `json:"updated_at,omitempty" gorm:"autoUpdateTime"`

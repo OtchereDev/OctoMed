@@ -5,16 +5,29 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	healthinfo "github.com/OtchereDev/ProjectAPI/cmd/api/resources/health-info"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func OpenDB() (*gorm.DB, error) {
 	var DB *gorm.DB
 	var err error
+
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second,   // Slow SQL threshold
+			LogLevel:                  logger.Silent, // Log level
+			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,          // Don't include params in the SQL log
+			Colorful:                  false,         // Disable color
+		},
+	)
 
 	DBName := os.Getenv("DB_NAME")
 	DBHost := os.Getenv("DB_HOST")
@@ -41,11 +54,13 @@ func OpenDB() (*gorm.DB, error) {
 		DB, err = gorm.Open(postgres.Open(DATABASEURL),
 			&gorm.Config{
 				DisableForeignKeyConstraintWhenMigrating: false,
+				Logger:                                   newLogger,
 			})
 	} else {
 
 		DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 			DisableForeignKeyConstraintWhenMigrating: false,
+			Logger:                                   newLogger,
 		})
 	}
 
@@ -69,6 +84,13 @@ func MigrateDB(db *gorm.DB) {
 		&models.Resource{},
 		&models.BotChat{},
 		&models.BotMessage{},
+		&models.BloodGlucose{},
+		&models.BloodPressure{},
+		&models.SleepPattern{},
+		&models.HeartBeat{},
+		&models.HeartBeat{},
+		&models.Height{},
+		&models.Weight{},
 	)
 	healthinfo.MigrateHealthCondition(db)
 }

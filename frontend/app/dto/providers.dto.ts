@@ -5,4 +5,10 @@ const RateDTO = z.object({
   rate: z.number().min(1, 'The minimum rating is a star'),
 })
 
-export { RateDTO }
+const BookAppointmentDTO = z.object({
+  appointment_date: z.string().datetime({ message: 'Provide a valid appointment date' }),
+  start_time: z.string().min(1, { message: 'start time is required' }),
+  duration: z.string().min(1, { message: 'duration is required' }),
+})
+
+export { BookAppointmentDTO, RateDTO }

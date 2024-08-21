@@ -1,4 +1,8 @@
+import { Form, useActionData, useNavigation } from '@remix-run/react'
 import { CalendarIcon, MapPin } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { getFormError } from '~/lib/getFormError'
+import { action } from '~/routes/_dashboard.health-care-providers._index'
 import { IDoctor } from '~/types/health-provider'
 import { Star } from '../shared/icons'
 import { Calendar } from '../ui/calendar'
@@ -10,17 +14,41 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog'
+import { toast } from '../ui/use-toast'
 
 export default function BookAppointment({
   children,
   doctor,
+  notFull,
 }: {
   children: React.ReactNode
   doctor: IDoctor
+  notFull?: boolean
 }) {
+  const [apptDate, setApptDate] = useState<Date>()
+  const [startTime, setStartTime] = useState<string>('')
+  const [duration, setDuration] = useState<string>('')
+  const [isOpen, setIsOpen] = useState(false)
+  const loading = useNavigation().state == 'submitting'
+
+  const response = useActionData<typeof action>()
+
+  useEffect(() => {
+    console.log(response)
+    if (response?.errors?.length) {
+      toast({ description: response?.response, title: 'Error' })
+    } else if (response?.response) {
+      toast({ description: response?.response })
+      setApptDate(undefined)
+      setDuration('')
+      setDuration('')
+      setIsOpen(false)
+    }
+  }, [response])
+
   return (
-    <Dialog>
-      <DialogTrigger className="w-full">{children}</DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger className={notFull ? '' : 'w-full'}>{children}</DialogTrigger>
       <DialogContent className="flex h-full w-full flex-col lg:h-[675px] lg:w-[723px]">
         <DialogHeader>
           <DialogTitle className="pt-[16px] text-left font-montserrat text-xl font-bold text-[#4D5061]">
@@ -59,66 +87,105 @@ export default function BookAppointment({
               </div>
             </div>
           </div>
+          <Form method="POST">
+            <input className="hidden" name="form" value="book-appointment" />
+            <input className="hidden" name="appointment-date" value={apptDate?.toISOString()} />
+            <input className="hidden" name="duration" value={duration} />
+            <input className="hidden" name="start-time" value={startTime} />
+            <input className="hidden" name="doctor-id" value={doctor.id} />
 
-          <div className="lg:flex lg:gap-6">
-            <div className="mt-[24px] rounded-[20px] border border-[#D0D5DD99] lg:flex-1">
-              <div className="border-b p-4 font-semibold text-[#333]">
-                <p>Pick appointment date</p>
-              </div>
-              <div>
-                <Calendar mode="single" initialFocus className="" />
-              </div>
-            </div>
-            <div className="mt-[24px] rounded-[20px] border border-[#D0D5DD99] lg:flex-1">
-              <div className="border-b p-4 font-semibold text-[#333]">
-                <p>Pick appointment time</p>
-              </div>
-              <div className="grid grid-cols-4 gap-2 p-4">
-                {[
-                  '9:00 AM',
-                  '10:00 AM',
-                  '11:00 AM',
-                  '12:00 PM',
-                  '1:00 PM',
-                  '2:00 PM',
-                  '3:00 PM',
-                  '4:00 PM',
-                  '5:00 PM',
-                ].map((time, idx) => (
-                  <div className={`rounded-sm py-1 ${idx == 0 ? 'bg-[#09AEF21A]' : ''}`}>
-                    <p
-                      className={`text-center text-xs ${idx == 0 ? 'text-[#1282A2]' : 'text-[#37474F]'}`}
-                    >
-                      {time}
-                    </p>
+            <div className="lg:flex lg:gap-6">
+              <div className="lg:flex-1">
+                <div className="mt-[24px] rounded-[20px] border border-[#D0D5DD99] lg:flex-1">
+                  <div className="border-b p-4 font-semibold text-[#333]">
+                    <p>Pick appointment date</p>
                   </div>
-                ))}
+                  <div>
+                    <Calendar
+                      selected={apptDate}
+                      onSelect={setApptDate}
+                      mode="single"
+                      initialFocus
+                      className=""
+                      disabled={(date) => date < new Date()}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-red-500">
+                  {getFormError('appointment-date', response?.errors)}
+                </p>
+              </div>
+
+              <div className="flex flex-col lg:flex-1">
+                <div className="mt-[24px] rounded-[20px] border border-[#D0D5DD99] lg:flex-1">
+                  <div className="border-b p-4 font-semibold text-[#333]">
+                    <p>Pick appointment time</p>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 p-4">
+                    {[
+                      '9:00 AM',
+                      '10:00 AM',
+                      '11:00 AM',
+                      '12:00 PM',
+                      '1:00 PM',
+                      '2:00 PM',
+                      '3:00 PM',
+                      '4:00 PM',
+                      '5:00 PM',
+                    ].map((time) => (
+                      <button
+                        type="button"
+                        onClick={() => setStartTime(time)}
+                        className={`rounded-sm py-1 ${startTime == time ? 'bg-[#09AEF21A]' : ''}`}
+                      >
+                        <p
+                          className={`text-center text-xs ${startTime == time ? 'text-[#1282A2]' : 'text-[#37474F]'}`}
+                        >
+                          {time}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-red-500">
+                  {getFormError('start_time', response?.errors)}
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="mt-[24px] rounded-[20px] border border-[#D0D5DD99]">
-            <div className="border-b p-4 font-semibold text-[#333]">
-              <p>Pick appointment duration</p>
-            </div>
-            <div className="grid grid-cols-4 gap-2 p-4 lg:grid-cols-9">
-              {['30 Min', '1 Hour', '2 Hours'].map((time, idx) => (
-                <div className={`rounded-sm py-1 ${idx == 0 ? 'bg-[#09AEF21A]' : ''}`}>
-                  <p
-                    className={`text-center text-xs ${idx == 0 ? 'text-[#1282A2]' : 'text-[#37474F]'}`}
-                  >
-                    {time}
-                  </p>
+            <div>
+              <div className="mt-[24px] rounded-[20px] border border-[#D0D5DD99]">
+                <div className="border-b p-4 font-semibold text-[#333]">
+                  <p>Pick appointment duration</p>
                 </div>
-              ))}
+                <div className="grid grid-cols-4 gap-2 p-4 lg:grid-cols-9">
+                  {['30 Min', '1 Hour', '2 Hours'].map((time) => (
+                    <button
+                      type="button"
+                      onClick={() => setDuration(time)}
+                      className={`rounded-sm py-1 ${duration == time ? 'bg-[#09AEF21A]' : ''}`}
+                    >
+                      <p
+                        className={`text-center text-xs ${duration == time ? 'text-[#1282A2]' : 'text-[#37474F]'}`}
+                      >
+                        {time}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-red-500">{getFormError('duration', response?.errors)}</p>
             </div>
-          </div>
 
-          <div className="fixed bottom-0 left-0 w-full border-t bg-white px-4 py-6 lg:relative lg:mt-6 lg:w-auto lg:border-0 lg:px-0 lg:py-0">
-            <button className="flex w-full items-center justify-center gap-[10px] rounded-primary bg-primary py-4 font-raleway font-bold text-white lg:w-auto lg:px-8">
-              <CalendarIcon size={18} /> Book
-            </button>
-          </div>
+            <div className="fixed bottom-0 left-0 w-full border-t bg-white px-4 py-6 lg:relative lg:mt-6 lg:w-auto lg:border-0 lg:px-0 lg:py-0">
+              <button
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-[10px] rounded-primary bg-primary py-4 font-raleway font-bold text-white lg:w-auto lg:px-8"
+              >
+                <CalendarIcon size={18} /> {loading ? 'Booking...' : 'Book'}
+              </button>
+            </div>
+          </Form>
         </DialogDescription>
       </DialogContent>
     </Dialog>

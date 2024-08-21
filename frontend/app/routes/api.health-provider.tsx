@@ -28,7 +28,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ tab, data })
 }
 
-async function fetchProvidersData(page: number, category: string, search: string) {
+export async function fetchProvidersData(page: number, category: string, search: string) {
   const req = await http.get(`/doctors${QueryBuilder({ page, search, category })}`)
   const data = req.data
 
@@ -37,7 +37,7 @@ async function fetchProvidersData(page: number, category: string, search: string
   }
 }
 
-async function fetchAppointmentsData(access: string) {
+export async function fetchAppointmentsData(access: string) {
   const req = await http.get(`/appointments`, {
     headers: {
       Authorization: `Bearer ${access}`,

@@ -1,53 +1,104 @@
-import { Link, useFetcher, useSearchParams } from '@remix-run/react'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import { Form, Link, json, useLoaderData, useSearchParams } from '@remix-run/react'
 import dayjs from 'dayjs'
 import { Calendar, MapPin, Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import BookAppointment from '~/components/health-providers/BookAppointment'
 import CancelAppointment from '~/components/health-providers/CancelAppointment'
 import { Star } from '~/components/shared/icons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { IError } from '~/lib/formatZodError'
+import {
+  bookAppointment,
+  deleteAppointment,
+  rescheduleAppointment,
+} from '~/server/health-provider.server'
+import { getSession } from '~/sessions'
 import { IAppointment } from '~/types/appointment'
 import { IDoctor } from '~/types/health-provider'
-import { HealthProvidersLoader } from './api.health-provider'
+import { fetchAppointmentsData, fetchProvidersData } from './api.health-provider'
 
-export default function HealthProviders() {
-  const fetcher = useFetcher<HealthProvidersLoader>()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const currentTab = searchParams.get('tab') || 'providers'
-  const [searchTerm, setSearchTerm] = useState<string>(searchParams.get('search') || '')
-  const [category, setCategory] = useState<string>(searchParams.get('category') || '')
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const url = new URL(request.url)
+  const tab = url.searchParams.get('tab') || 'providers'
+  const page = url.searchParams.get('page') ? parseInt(url.searchParams.get('page') as string) : 1
+  const category = url.searchParams.get('category') as string
+  const search = url.searchParams.get('search') as string
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams)
-    params.set('tab', currentTab)
-    params.set('search', searchTerm)
-    params.set('category', category)
-    fetcher.load(`/api/health-provider?${params.toString()}`)
-  }, [currentTab, searchTerm, category])
+  const session = await getSession(request.headers.get('Cookie'))
+  const accessToken = session.get('accessToken')
 
-  const data = fetcher.data?.data
+  let data
 
-  console.log(data)
-
-  const handleSearch = () => {
-    const params = new URLSearchParams(searchParams)
-    if (searchTerm) {
-      params.set('search', searchTerm)
-    } else {
-      params.delete('search')
-    }
-    setSearchParams(params)
+  if (tab === 'providers') {
+    data = await fetchProvidersData(page, category, search)
+  } else if (tab === 'appointments') {
+    data = await fetchAppointmentsData(accessToken!)
   }
 
-  const handleCategoryClick = (category: string) => {
-    const params = new URLSearchParams(searchParams)
-    if (category) {
-      params.set('category', category)
-    } else {
-      params.delete('category')
+  return json({ tab, data })
+}
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const session = await getSession(request.headers.get('Cookie'))
+  const accessToken = session.get('accessToken')!
+
+  const url = new URL(request.url)
+  const formData = await request.formData()
+  const formName = formData.get('form')
+
+  const tab = url.searchParams.get('tab') || 'providers'
+  const generalError = {
+    path: 'global',
+    message: 'Unhandles action is being perform',
+  } as IError
+
+  if (tab == 'providers') {
+    switch (formName) {
+      case 'book-appointment':
+        return await bookAppointment(formData, accessToken)
+
+      default:
+        return json({
+          errors: [generalError],
+          response: generalError.message,
+        })
     }
-    setCategory(category)
-    setSearchParams(params)
+  } else if (tab == 'appointments') {
+    switch (formName) {
+      case 'cancel-appointment':
+        return await bookAppointment(formData, accessToken)
+      case 'reschedule-appointment':
+        return await rescheduleAppointment(formData, accessToken)
+      case 'delete-appointment':
+        return await deleteAppointment(formData, accessToken)
+      default:
+        return json({
+          errors: [generalError],
+          response: generalError.message,
+        })
+    }
+  } else {
+    return json({
+      errors: [generalError],
+      response: generalError.message,
+    })
+  }
+}
+
+export default function HealthProviders() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentTab = searchParams.get('tab') || 'providers'
+  const category = searchParams.get('category')
+
+  const { data, tab } = useLoaderData<typeof loader>()
+
+  const handleCategoryClick = (category: string) => {
+    if (category) {
+      searchParams.set('category', category)
+    } else {
+      searchParams.delete('category')
+    }
+    setSearchParams(searchParams)
   }
 
   return (
@@ -75,7 +126,7 @@ export default function HealthProviders() {
         </TabsList>
         <TabsContent value="providers">
           <section>
-            <div className="mt-[30px] flex w-full gap-2">
+            <Form name="search" method="GET" className="mt-[30px] flex w-full gap-2">
               <div className="flex flex-1 items-center gap-3 rounded-primary border px-[14px] py-[10px] lg:max-w-[418px]">
                 <Search strokeWidth={2.5} size={18} />
                 <input
@@ -83,18 +134,13 @@ export default function HealthProviders() {
                   name="search"
                   placeholder="Search doctor by name, specialty"
                   className="flex-1 font-montserrat outline-none placeholder:font-montserrat"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button
-                onClick={handleSearch}
-                className="flex w-auto items-center gap-2 rounded-primary border px-5 py-3 font-montserrat text-sm font-semibold text-[#353746]"
-              >
+              <button className="flex w-auto items-center gap-2 rounded-primary border px-5 py-3 font-montserrat text-sm font-semibold text-[#353746]">
                 <Search size={18} color="#353746" strokeWidth={3} />
                 Search
               </button>
-            </div>
+            </Form>
 
             <div className="mt-[30px] flex items-center gap-2 overflow-scroll">
               {['', 'Primary Care Doctor', 'Allergists/Immunologist', 'Cardiologist'].map((cat) => (

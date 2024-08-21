@@ -3,13 +3,14 @@ import { Link, json, useLoaderData } from '@remix-run/react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { ArrowLeft, BriefcaseBusiness, GraduationCap, MapPin, Star } from 'lucide-react'
+import BookAppointment from '~/components/health-providers/BookAppointment'
 import LeaveReview from '~/components/health-providers/LeaveReview'
 import { Star as StarIcon } from '~/components/shared/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { RateDTO } from '~/dto/providers.dto'
-import { IError, formatZodErrors } from '~/lib/formatZodError'
+import { IError } from '~/lib/formatZodError'
 import http from '~/lib/http'
+import { bookAppointment, rateDoctor } from '~/server/health-provider.server'
 import { getSession } from '~/sessions'
 import { IDoctor } from '~/types/health-provider'
 
@@ -42,47 +43,27 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const formData = await request.formData()
-  const comment = formData.get('comment') ?? ''
-  const rate = formData.get('rate') ? parseInt(formData.get('rate') as string) : 0
-  const doctor_id = parseInt(params['doctorId'] as string)
-
   const session = await getSession(request.headers.get('Cookie'))
+  const accessToken = session.get('accessToken')!
 
-  try {
-    const result = RateDTO.parse({
-      comment,
-      rate,
-    })
+  const formData = await request.formData()
+  const formName = formData.get('form')
 
-    const response = await http.post(
-      '/rating/create',
-      { ...result, doctor_id },
-      {
-        headers: {
-          Authorization: `Bearer ${session.get('accessToken')}`,
-        },
-      }
-    )
+  const generalError = {
+    path: 'global',
+    message: 'Unhandles action is being perform',
+  } as IError
 
-    return json({
-      errors: [] as IError[],
-      response: response?.data.message,
-    })
-  } catch (error: any) {
-    if (error.errors?.length) {
+  switch (formName) {
+    case 'review':
+      return await rateDoctor(formData, accessToken, params['doctorId'] as string)
+    case 'book-appointment':
+      return bookAppointment(formData, accessToken)
+    default:
       return json({
-        errors: formatZodErrors(error.errors),
-        response: 'Validation Errors',
+        errors: [generalError],
+        response: generalError.message,
       })
-    }
-
-    return json({
-      errors: [
-        { path: 'universal', message: error?.response?.data?.message ?? 'An error occurred' },
-      ] as IError[],
-      response: error?.response?.data?.message ?? 'An error occurred',
-    })
   }
 }
 
@@ -102,9 +83,11 @@ export default function DoctorProfile() {
             </button>
           </Link>
           <div className="flex gap-2 lg:items-center lg:justify-end lg:gap-4">
-            <button className="flex-[1.5] rounded-primary bg-primary py-4 font-bold text-white lg:flex lg:w-auto lg:flex-none lg:px-8">
-              Book Appointment
-            </button>
+            <BookAppointment notFull doctor={doctor as IDoctor}>
+              <button className="flex-[1.5] rounded-primary bg-primary py-4 font-bold text-white lg:flex lg:w-auto lg:flex-none lg:px-8">
+                Book Appointment
+              </button>
+            </BookAppointment>
             <LeaveReview>
               <button className="flex w-full flex-1 justify-center gap-2 rounded-primary bg-[#DCECF4] py-4 font-bold text-primary lg:w-auto lg:flex-none lg:px-8">
                 <Star />

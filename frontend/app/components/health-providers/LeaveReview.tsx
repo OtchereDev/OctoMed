@@ -46,6 +46,7 @@ export default function LeaveReview({ children }: { children: React.ReactNode })
             <p className="mb-4 text-xs text-red-500">{getFormError('rate', response?.errors)}</p>
 
             <input name="rate" value={star} className="hidden" />
+            <input name="form" value="review" className="hidden" />
             <Textarea
               name="comment"
               placeholder="Write your review here..."

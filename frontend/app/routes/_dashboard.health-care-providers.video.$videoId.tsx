@@ -1,17 +1,48 @@
-import { Link } from '@remix-run/react'
+import { LoaderFunctionArgs, redirect } from '@remix-run/node'
+import { Link, useLoaderData } from '@remix-run/react'
 import { ArrowLeft, Send } from 'lucide-react'
+import CountdownTimer from '~/components/health-providers/CountDownTimer'
 import EndAppointment from '~/components/health-providers/EndAppointment'
 import { Camera, Chat, Mute, Star } from '~/components/shared/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import http from '~/lib/http'
+import { getSession } from '~/sessions'
+import { IAppointment } from '~/types/appointment'
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const id = params['videoId'] as string
+  const session = await getSession(request.headers.get('Cookie'))
+  const accessToken = session.get('accessToken')!
+  const userId = session.get('id')
+
+  try {
+    const req = await http.get(`/appointments/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+
+    const response = req.data
+
+    if (userId != response.data.appointment?.user_id) {
+      return redirect('/health-care-providers')
+    }
+
+    return {
+      appointment: response.data.appointment as IAppointment['appointments'][0],
+    }
+  } catch (errors) {
+    return redirect('/health-care-providers')
+  }
+}
 
 export default function WatchVideo() {
+  const { appointment } = useLoaderData<typeof loader>()
   return (
     <section className="px-4 py-5">
       <div className="relative w-full rounded-[16px] border">
         <div className="relative h-full w-full overflow-hidden rounded-[16px] p-4">
           <img
             className="absolute left-0 top-0 h-full w-full object-cover"
-            src="https://images.pexels.com/photos/3714743/pexels-photo-3714743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            src={appointment.doctor.profile}
           />
           <div className="absolute left-0 top-0 h-full w-full bg-black bg-opacity-70" />
           <div className="relative flex h-full w-full flex-col justify-between">
@@ -24,11 +55,16 @@ export default function WatchVideo() {
               </Link>
               <div className="mt-4 font-montserrat font-semibold text-white">
                 <div className="lg:flex lg:justify-between">
-                  <h3 className="line-clamp-1 lg:text-2xl">Appointment #5 - Dr Daniel Everton</h3>
-                  <p className="mt-2 lg:mt-0">00:30:00 left</p>
+                  <h3 className="line-clamp-1 lg:text-2xl">
+                    Appointment #{appointment.id} - {appointment.doctor.name}
+                  </h3>
+                  <CountdownTimer
+                    endDateTime={appointment.end_time}
+                    startDateTime={appointment.start_time}
+                  />
                 </div>
                 <div className="lg:mt-[10px] lg:flex lg:items-center lg:gap-2 lg:text-base">
-                  <p className="mt-2 text-sm lg:mt-0">Primary Care Doctor</p>
+                  <p className="mt-2 text-sm lg:mt-0">{appointment.doctor.specialty}</p>
                   <div className="mt-1 flex items-center gap-2 lg:order-2 lg:mt-0">
                     <Star />
                     <p className="font-normal">4.9 (102)</p>
@@ -46,7 +82,7 @@ export default function WatchVideo() {
           </div>
         </div>
         <Avatar className="absolute bottom-0 left-8 h-[82px] w-[82px] translate-y-1/2 border-4 border-white">
-          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarImage src={appointment.doctor.profile} />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>
@@ -55,7 +91,7 @@ export default function WatchVideo() {
         <div className="border-b p-6 font-montserrat lg:flex lg:items-center lg:justify-between">
           <div className="flex items-center gap-2 font-semibold text-[#333]">
             <Chat />
-            <h2 className="text-lg">Chat with Dr Daniel</h2>
+            <h2 className="text-lg">Chat with {appointment.doctor.name}</h2>
           </div>
           <div className="mt-4 flex items-center gap-3 font-raleway lg:mt-0">
             <button className="flex gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] px-[18px] py-[10px] font-semibold text-primary">
@@ -75,13 +111,13 @@ export default function WatchVideo() {
           <div className="p-6 lg:flex-[2]">
             <div className="relative flex h-[503px] items-center justify-center rounded-[16px] bg-[#4D5061]">
               <Avatar className="h-[150px] w-[150px] border-4 border-white">
-                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarImage src={appointment.doctor.profile} />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
 
               <div className="absolute bottom-4 right-4 flex h-[96px] w-[150px] items-center justify-center rounded-[10px] border-2">
                 <Avatar className="h-[52px] w-[52px] border-4 border-white">
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarImage src={'https://github.com/shadcn.png'} />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
               </div>

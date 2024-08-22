@@ -40,6 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   session.unset('accessToken')
   session.unset('email')
+  session.unset('id')
 
   return redirect('/', {
     headers: {

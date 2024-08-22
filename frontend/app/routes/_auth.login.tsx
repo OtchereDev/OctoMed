@@ -38,6 +38,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const response = await login(result)
     if (response.status && response.user) {
       session.set('accessToken', response.access_token)
+      session.set('id', response.user.id)
+      session.set('email', response.user.email)
 
       if (!response.user.skip_onboarding) {
         if (!response.user.biodata_setup) {

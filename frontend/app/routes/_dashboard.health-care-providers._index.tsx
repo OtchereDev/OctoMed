@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
-import { Form, Link, json, useLoaderData, useSearchParams } from '@remix-run/react'
+import { Form, Link, json, useFetcher, useLoaderData, useSearchParams } from '@remix-run/react'
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import { Calendar, MapPin, Search, Trash2 } from 'lucide-react'
@@ -95,6 +95,7 @@ export default function HealthProviders() {
   const [searchParams, setSearchParams] = useSearchParams()
   const currentTab = searchParams.get('tab') || 'providers'
   const category = searchParams.get('category')
+  const fetcher = useFetcher()
 
   const { data, tab } = useLoaderData<typeof loader>()
 
@@ -261,9 +262,12 @@ export default function HealthProviders() {
 
                           {appt.status != 'cancelled' &&
                             isCurrentTimeBetween(appt.start_time, appt.end_time) && (
-                              <button className="text-nowrap rounded-[8px] bg-[#1282A2] px-4 py-[10px] font-semibold text-white">
-                                Join Appointment
-                              </button>
+                              <fetcher.Form method="POST" action="/api/join-appointment">
+                                <input className="hidden" name="id" value={appt.id} />
+                                <button className="text-nowrap rounded-[8px] bg-[#1282A2] px-4 py-[10px] font-semibold text-white">
+                                  Join Appointment
+                                </button>
+                              </fetcher.Form>
                             )}
                         </div>
                       </div>

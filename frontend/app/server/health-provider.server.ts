@@ -89,15 +89,146 @@ export async function rateDoctor(formData: FormData, token: string, doctorId: st
   }
 }
 
-export async function rescheduleAppointment(form: FormData, userToken: string) {}
+export async function rescheduleAppointment(form: FormData, userToken: string) {
+  const appointmentDate = form.get('appointment-date')
+  const appointmentDuration = form.get('duration')
+  const appointmentStartTime = form.get('start-time')
+  const doctorId = form.get('doctor-id')
+  const id = form.get('id') as string
 
-export async function cancelAppointment(form: FormData, userToken: string) {}
+  try {
+    const result = BookAppointmentDTO.parse({
+      appointment_date: appointmentDate,
+      start_time: appointmentStartTime,
+      duration: appointmentDuration,
+    })
 
-export async function deleteAppointment(form: FormData, userToken: string) {}
+    const { end, start } = generateStartAndEndDate(
+      result.appointment_date,
+      result.duration,
+      result.start_time
+    )
+
+    const response = await handleRescheduleAppointment(
+      id,
+      {
+        doctor_id: parseInt(doctorId as string),
+        start_time: start?.toISOString(),
+        end_time: end?.toISOString(),
+        duration: result.duration,
+      },
+      userToken
+    )
+
+    return json({
+      errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
+      response: response.message,
+    })
+  } catch (error: any) {
+    if (error.errors?.length) {
+      return json({
+        errors: formatZodErrors(error.errors),
+        response: 'Validation Errors',
+      })
+    }
+  }
+}
+
+export async function cancelAppointment(form: FormData, userToken: string) {
+  const id = form.get('id') ?? ''
+
+  const response = await handleCancelAppointment(id, userToken)
+
+  return json({
+    errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
+    response: response.message,
+  })
+}
+
+export async function deleteAppointment(form: FormData, userToken: string) {
+  const id = form.get('id') ?? ''
+
+  const response = await handleDeleteAppointment(id, userToken)
+
+  return json({
+    errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
+    response: response.message,
+  })
+}
 
 const handleBookAppointment = async (data: any, token: string) => {
   try {
     const request = await http.post('/appointments/book', data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const response = request.data
+
+    return {
+      message: response.data.message,
+      status: true,
+    }
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response.data?.data?.message,
+    }
+  }
+}
+
+const handleDeleteAppointment = async (data: any, token: string) => {
+  try {
+    const request = await http.delete(`/appointments/delete/${data}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const response = request.data
+
+    return {
+      message: response.data.message,
+      status: true,
+    }
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response.data?.data?.message,
+    }
+  }
+}
+
+const handleCancelAppointment = async (data: any, token: string) => {
+  try {
+    const request = await http.post(
+      `/appointments/cancel/${data}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    const response = request.data
+
+    return {
+      message: response.data.message,
+      status: true,
+    }
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response.data?.data?.message,
+    }
+  }
+}
+
+const handleRescheduleAppointment = async (apptId: string, data: any, token: string) => {
+  try {
+    const request = await http.post(`/appointments/reschedule/${apptId}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

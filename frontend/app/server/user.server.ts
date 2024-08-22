@@ -122,7 +122,6 @@ export async function getCurrentUserDetail(access: string) {
       user: response?.data as IUser,
     }
   } catch (error: any) {
-    console.log(error.response.data)
     return {
       status: false,
       message: error.response.data?.message,

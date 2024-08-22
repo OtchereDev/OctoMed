@@ -12,7 +12,7 @@ import {
 } from '../ui/dialog'
 import { toast } from '../ui/use-toast'
 
-export default function CancelAppointment({
+export default function DeleteAppointment({
   children,
   apptId,
 }: {
@@ -35,19 +35,19 @@ export default function CancelAppointment({
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger className="flex-1">{children}</DialogTrigger>
+      <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="w-[calc(100%-20px)] !rounded-[20px] text-left lg:!w-[412px]">
         <DialogHeader>
           <DialogTitle className="text-left font-montserrat font-bold">
-            Cancel the Appointment
+            Delete this Appointment
           </DialogTitle>
         </DialogHeader>
         <DialogDescription className="pt-4">
           <Form method="POST">
-            <input name="form" value="cancel-appointment" className="hidden" />
+            <input name="form" value="delete-appointment" className="hidden" />
             <input name="id" value={apptId} className="hidden" />
             <p className="mb-2 font-montserrat font-medium text-[#4D5061]">
-              Are you sure you want to cancel the appointment?
+              Are you sure you want to delete the appointment?
             </p>
 
             <div className="mt-6 flex gap-4">

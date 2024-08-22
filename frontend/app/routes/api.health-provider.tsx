@@ -12,8 +12,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const category = url.searchParams.get('category') as string
   const search = url.searchParams.get('search') as string
 
-  console.log(search, category)
-
   const session = await getSession(request.headers.get('Cookie'))
   const accessToken = session.get('accessToken')
 

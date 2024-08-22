@@ -1,14 +1,18 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { Form, Link, json, useLoaderData, useSearchParams } from '@remix-run/react'
 import dayjs from 'dayjs'
-import { Calendar, MapPin, Search } from 'lucide-react'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+import { Calendar, MapPin, Search, Trash2 } from 'lucide-react'
 import BookAppointment from '~/components/health-providers/BookAppointment'
 import CancelAppointment from '~/components/health-providers/CancelAppointment'
+import DeleteAppointment from '~/components/health-providers/DeleteAppointment'
 import { Star } from '~/components/shared/icons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { IError } from '~/lib/formatZodError'
+import { isCurrentTimeBetween } from '~/lib/getDateDuration'
 import {
   bookAppointment,
+  cancelAppointment,
   deleteAppointment,
   rescheduleAppointment,
 } from '~/server/health-provider.server'
@@ -16,6 +20,8 @@ import { getSession } from '~/sessions'
 import { IAppointment } from '~/types/appointment'
 import { IDoctor } from '~/types/health-provider'
 import { fetchAppointmentsData, fetchProvidersData } from './api.health-provider'
+
+dayjs.extend(advancedFormat)
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)
@@ -66,7 +72,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   } else if (tab == 'appointments') {
     switch (formName) {
       case 'cancel-appointment':
-        return await bookAppointment(formData, accessToken)
+        return await cancelAppointment(formData, accessToken)
       case 'reschedule-appointment':
         return await rescheduleAppointment(formData, accessToken)
       case 'delete-appointment':
@@ -201,7 +207,9 @@ export default function HealthProviders() {
                 <div className="absolute left-0 top-3 flex h-[52px] w-[52px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-white bg-[#E8F3F6] text-[#1282A2] lg:top-2">
                   <Calendar size={18} />
                 </div>
-                <h3 className="font-bold text-[#191919]">Thursday - 12th September 2024</h3>
+                <h3 className="font-bold text-[#191919]">
+                  {dayjs(appointment.date).format('dddd - Do MMMM YYYY')}
+                </h3>
                 {appointment.appointments.map((appt) => (
                   <div
                     key={appt.id}
@@ -228,15 +236,35 @@ export default function HealthProviders() {
                           <p>Monday - Friday</p>
                           <p>9:00AM - 5:00 PM</p>
                         </div>
-                        <div className="mt-4 hidden gap-3 lg:flex">
-                          <CancelAppointment>
-                            <button className="rounded-[8px] bg-[#FEF3F2] px-4 py-[10px] font-semibold text-[#F04438]">
-                              Cancel
-                            </button>
-                          </CancelAppointment>
-                          <button className="rounded-[8px] bg-[#E8F3F6] px-4 py-[10px] font-semibold text-[#1282A2]">
-                            Re-Schedule
-                          </button>
+                        <div className="mt-4 hidden gap-3 lg:flex lg:items-center">
+                          {appt.status == 'cancelled' ? (
+                            <DeleteAppointment apptId={appt.id}>
+                              <button className="flex items-center gap-2 rounded-[8px] bg-[#FEF3F2] px-4 py-[10px] font-semibold text-[#F04438]">
+                                <Trash2 size={18} /> Delete
+                              </button>
+                            </DeleteAppointment>
+                          ) : (
+                            <CancelAppointment apptId={appt.id}>
+                              <button className="rounded-[8px] bg-[#FEF3F2] px-4 py-[10px] font-semibold text-[#F04438]">
+                                Cancel
+                              </button>
+                            </CancelAppointment>
+                          )}
+
+                          {appt.status != 'cancelled' && (
+                            <BookAppointment doctor={appt.doctor} appt={appt}>
+                              <button className="rounded-[8px] bg-[#E8F3F6] px-4 py-[10px] font-semibold text-[#1282A2]">
+                                Re-Schedule
+                              </button>
+                            </BookAppointment>
+                          )}
+
+                          {appt.status != 'cancelled' &&
+                            isCurrentTimeBetween(appt.start_time, appt.end_time) && (
+                              <button className="text-nowrap rounded-[8px] bg-[#1282A2] px-4 py-[10px] font-semibold text-white">
+                                Join Appointment
+                              </button>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -253,7 +281,7 @@ export default function HealthProviders() {
                       </div>
 
                       <div className="mt-6 flex gap-3 lg:hidden">
-                        <CancelAppointment>
+                        <CancelAppointment apptId={appt.id}>
                           <button className="w-full rounded-[8px] bg-[#FEF3F2] py-[10px] font-semibold text-[#F04438]">
                             Cancel
                           </button>

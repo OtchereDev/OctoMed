@@ -194,11 +194,11 @@ func (u AppointmentApp) GetOrGenerateMeetingLink(user int, aId int) (string, err
 		return "", result.Error
 	}
 
-	// Check if the current time is within the appointment's start and end time
-	currentTime := time.Now()
-	if currentTime.Before(appointment.StartTime) || currentTime.After(appointment.EndTime) {
-		return "", errors.New("meeting link can only be accessed during the scheduled appointment time")
-	}
+	// // Check if the current time is within the appointment's start and end time
+	// currentTime := time.Now()
+	// if currentTime.Before(appointment.StartTime) || currentTime.After(appointment.EndTime) {
+	// 	return "", errors.New("meeting link can only be accessed during the scheduled appointment time")
+	// }
 
 	if appointment.MeetingLink == "" {
 		newLink, _ := GenerateUniqueMeetingLink(db)

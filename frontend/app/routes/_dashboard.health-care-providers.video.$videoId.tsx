@@ -1,13 +1,25 @@
-import { LoaderFunctionArgs, redirect } from '@remix-run/node'
+import { json, LoaderFunctionArgs, redirect } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { ArrowLeft, Send } from 'lucide-react'
+import pkg from 'agora-access-token'
+import { ArrowLeft } from 'lucide-react'
+import Page from '~/components/health-data/VideoBox'
 import CountdownTimer from '~/components/health-providers/CountDownTimer'
 import EndAppointment from '~/components/health-providers/EndAppointment'
-import { Camera, Chat, Mute, Star } from '~/components/shared/icons'
+import { Star } from '~/components/shared/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import http from '~/lib/http'
 import { getSession } from '~/sessions'
 import { IAppointment } from '~/types/appointment'
+const { RtcRole, RtmRole, RtmTokenBuilder, RtcTokenBuilder } = pkg
+
+export type VideoBoxData = {
+  rtcToken: string
+  rtmToken: string
+  appId: string
+  channel: string
+  username: number
+  appointment: IAppointment['appointments'][0]
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const id = params['videoId'] as string
@@ -26,16 +38,48 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       return redirect('/health-care-providers')
     }
 
-    return {
-      appointment: response.data.appointment as IAppointment['appointments'][0],
+    const { APP_ID, CERTIFICATE } = process.env as unknown as {
+      APP_ID: string
+      CERTIFICATE: string
     }
-  } catch (errors) {
+
+    const channel = params.videoId as string
+    const username = Date.now()
+    const time = Math.floor(username / 1000) + 600
+    const rtcToken = RtcTokenBuilder.buildTokenWithUid(
+      APP_ID,
+      CERTIFICATE,
+      channel,
+      0,
+      RtcRole.PUBLISHER,
+      time
+    )
+    const rtmToken = RtmTokenBuilder.buildToken(
+      APP_ID,
+      CERTIFICATE,
+      String(username),
+      RtmRole.Rtm_User,
+      time
+    )
+
+    const data = {
+      rtcToken,
+      appId: APP_ID,
+      channel,
+      rtmToken,
+      username,
+      appointment: response.data.appointment as IAppointment['appointments'][0],
+    } as VideoBoxData
+
+    return json(data)
+  } catch (errors: any) {
     return redirect('/health-care-providers')
   }
 }
 
 export default function WatchVideo() {
-  const { appointment } = useLoaderData<typeof loader>()
+  const data = useLoaderData<typeof loader>()
+  const { appointment } = data
   return (
     <section className="px-4 py-5">
       <div className="relative w-full rounded-[16px] border">
@@ -82,12 +126,12 @@ export default function WatchVideo() {
           </div>
         </div>
         <Avatar className="absolute bottom-0 left-8 h-[82px] w-[82px] translate-y-1/2 border-4 border-white">
-          <AvatarImage src={appointment.doctor.profile} />
+          <AvatarImage src={appointment.doctor.profile} className="object-cover" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>
 
-      <div className="mt-16 rounded-[20px] border">
+      {/* <div className="mt-16 rounded-[20px] border">
         <div className="border-b p-6 font-montserrat lg:flex lg:items-center lg:justify-between">
           <div className="flex items-center gap-2 font-semibold text-[#333]">
             <Chat />
@@ -102,9 +146,9 @@ export default function WatchVideo() {
               <Camera />
               Camera On
             </button>
-            {/* <button className="flex gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] p-[12px] font-semibold text-primary">
+            <button className="flex gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] p-[12px] font-semibold text-primary">
               <FullscreenIcon />
-            </button> */}
+            </button>
           </div>
         </div>
         <div className="lg:flex">
@@ -148,7 +192,8 @@ export default function WatchVideo() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
+      <Page data={data} />
     </section>
   )
 }

@@ -1,4 +1,6 @@
+import { Link } from '@remix-run/react'
 import { Expand, Send } from 'lucide-react'
+import { useState } from 'react'
 import Octavia from '~/assets/images/octavia.png'
 import Bg from '~/assets/octavia-bg.png'
 import {
@@ -11,8 +13,9 @@ import {
 } from '../ui/dialog'
 
 export default function OctaviaModal({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="!bottom-0 !mb-auto mt-10 flex !h-[90%] !w-full flex-col gap-0 overflow-hidden !rounded-t-[20px] border-0 p-0 lg:ml-[35%] lg:mt-3 lg:!h-[589px] lg:!w-[415px] lg:rounded-[20px]">
         <DialogHeader className="relative h-[144px] p-4 text-left">
@@ -21,9 +24,11 @@ export default function OctaviaModal({ children }: { children: React.ReactNode }
             <DialogTitle className="font-montserrat text-2xl font-semibold text-white">
               Hi Daniel 👋
             </DialogTitle>
-            <button className="mt-4 text-white">
-              <Expand />
-            </button>
+            <Link to="/chat">
+              <button onClick={() => setOpen(false)} className="mt-4 text-white">
+                <Expand />
+              </button>
+            </Link>
           </div>
           <p className="relative pt-2 font-montserrat font-medium text-white">I’m here to help</p>
         </DialogHeader>

@@ -2,7 +2,9 @@ import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction, json } from '@rem
 import { Link, NavLink, Outlet, redirect } from '@remix-run/react'
 import { useState } from 'react'
 import SideImage from '~/assets/images/dashboard-sidebar.svg'
+import Octavia from '~/assets/images/octavia.png'
 import NotificationSheet from '~/components/shared/NotificationSheet'
+import OctaviaModal from '~/components/shared/OctaviaModal'
 import SignoutButton from '~/components/shared/Signout'
 import {
   Bell,
@@ -195,6 +197,12 @@ export default function DashboardLayout() {
           </Drawer>
         </aside>
       </section>
+
+      <OctaviaModal>
+        <div className="absolute bottom-5 right-10 z-10 h-[55px] w-[55px] cursor-pointer overflow-hidden rounded-full border-2 border-primary bg-white lg:h-[85px] lg:w-[85px] lg:border-4">
+          <img src={Octavia} alt="octavia" className="h-full w-full" />
+        </div>
+      </OctaviaModal>
     </section>
   )
 }

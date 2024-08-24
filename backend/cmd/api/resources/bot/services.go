@@ -2,7 +2,6 @@ package bot
 
 import (
 	"context"
-	"os"
 	"strings"
 
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
@@ -11,7 +10,7 @@ import (
 )
 
 // generateChatTitle generates a title for the chat using OpenAI based on the first message's content
-func generateChatTitle(chat *models.BotChat, db *gorm.DB) error {
+func generateChatTitle(chat *models.BotChat, db *gorm.DB, client *openai.Client) error {
 	if chat.Title != "New chat" {
 		return nil
 	}
@@ -20,7 +19,7 @@ func generateChatTitle(chat *models.BotChat, db *gorm.DB) error {
 		firstMessage := chat.Messages[0].Content
 
 		// Send the first message to OpenAI to generate a suitable title
-		resp, err := openaiClient.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
+		resp, err := client.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
 			Messages: []openai.ChatCompletionMessage{
 				{
@@ -49,8 +48,6 @@ func generateChatTitle(chat *models.BotChat, db *gorm.DB) error {
 	}
 	return nil
 }
-
-var openaiClient = openai.NewClient(os.Getenv("OPENAI_KEY"))
 
 func (u BotApp) GetAllMyChats(userID int) ([]models.BotChat, error) {
 	db := u.DB
@@ -118,7 +115,7 @@ func (u BotApp) MessageOpenAI(req ChatRequest) (models.BotMessage, error) {
 
 	chat.Messages = append(chat.Messages, userMessage)
 	// Generate a chat title using OpenAI, if necessary
-	if err := generateChatTitle(&chat, db); err != nil {
+	if err := generateChatTitle(&chat, db, u.OpenAIClient); err != nil {
 		return userMessage, err
 	}
 
@@ -136,7 +133,7 @@ func (u BotApp) MessageOpenAI(req ChatRequest) (models.BotMessage, error) {
 		Content: req.Content,
 	})
 
-	resp, err := openaiClient.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
+	resp, err := u.OpenAIClient.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
 		Model:    openai.GPT4oMini,
 		Messages: messages,
 	})

@@ -39,3 +39,20 @@ func UploadImage(img string, fileName string) (string, error) {
 
 	return resp.URL, err
 }
+
+func UploadFileFromURL(fileURL, fileName string) (string, error) {
+
+	// Upload the file to Cloudinary from the remote URL
+	result, err := Cld.Upload.Upload(context.Background(), fileURL, uploader.UploadParams{
+		Folder:         "octomed",
+		PublicID:       fileName,
+		UniqueFilename: api.Bool(false),
+		Overwrite:      api.Bool(true),
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("failed to upload file to Cloudinary: %w", err)
+	}
+
+	return result.SecureURL, nil
+}

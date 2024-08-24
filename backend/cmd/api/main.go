@@ -4,17 +4,20 @@ import (
 	"encoding/json"
 	"flag"
 	"log"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
+	"github.com/sashabaranov/go-openai"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/appointment"
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/bot"
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/doctor"
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/fitness"
 	healthinfo "github.com/OtchereDev/ProjectAPI/cmd/api/resources/health-info"
 	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/library"
 	metric "github.com/OtchereDev/ProjectAPI/cmd/api/resources/metrics"
@@ -33,6 +36,7 @@ type Application struct {
 	BotApp      *bot.BotApp
 	LibraryApp  *library.LibraryApp
 	MetricsApp  *metric.MetricApp
+	FitnessApp  *fitness.FitnessApp
 }
 
 // @title OctoMed
@@ -79,6 +83,9 @@ func main() {
 	// start storage
 	storage.SetupCloudinary()
 
+	// openai instance
+	var openaiClient = openai.NewClient(os.Getenv("OPENAI_KEY"))
+
 	s := &Application{
 		Users: &u.UserApp{
 			DB:       db,
@@ -101,9 +108,10 @@ func main() {
 			Validate: validate,
 		},
 		BotApp: &bot.BotApp{
-			DB:       db,
-			App:      app,
-			Validate: validate,
+			DB:           db,
+			App:          app,
+			Validate:     validate,
+			OpenAIClient: openaiClient,
 		},
 		LibraryApp: &library.LibraryApp{
 			DB:       db,
@@ -115,6 +123,12 @@ func main() {
 			App:      app,
 			Validate: validate,
 		},
+		FitnessApp: &fitness.FitnessApp{
+			DB:           db,
+			App:          app,
+			Validate:     validate,
+			OpenAiClient: openaiClient,
+		},
 	}
 
 	// routes
@@ -125,6 +139,7 @@ func main() {
 	s.BotApp.BotRoutes()
 	s.LibraryApp.LibraryRoutes()
 	s.MetricsApp.Routes()
+	s.FitnessApp.Routes()
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	app.Listen(*addr)

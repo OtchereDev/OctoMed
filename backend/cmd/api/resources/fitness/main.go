@@ -1,4 +1,4 @@
-package bot
+package fitness
 
 import (
 	"github.com/go-playground/validator/v10"
@@ -7,15 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type BotApp struct {
+type FitnessApp struct {
 	DB           *gorm.DB
 	App          *fiber.App
 	Validate     *validator.Validate
-	OpenAIClient *openai.Client
-}
-
-type ChatRequest struct {
-	ChatID  uint   `json:"chat_id"`
-	UserID  uint   `json:"user_id"`
-	Content string `json:"content"`
+	OpenAiClient *openai.Client
 }

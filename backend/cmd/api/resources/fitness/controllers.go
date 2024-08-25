@@ -1,6 +1,7 @@
 package fitness
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
@@ -96,7 +97,179 @@ func GenerateDiet(c *fiber.Ctx, app FitnessApp) error {
 	user, _ := utils.SerializeRequestUser(c)
 	userId, _ := strconv.Atoi(user.UserID)
 
-	app.GenerateDiet(userId)
+	startDateStr := c.Query("start_date")
+	var startDate time.Time
 
-	return c.JSON(&fiber.Map{})
+	var err error
+
+	// If start_date is provided, try to parse it, otherwise use today's date
+	if startDateStr != "" {
+		startDate, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"status": http.StatusBadRequest,
+				"data": &fiber.Map{
+					"message": "invalid start_date format, expected YYYY-MM-DD",
+				},
+			})
+		}
+	} else {
+		startDate = time.Now() // Default to today if no start_date is provided
+	}
+
+	mealPlans, err := app.GenerateDiet(userId, startDate)
+
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"status": http.StatusBadRequest,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			},
+		})
+	}
+
+	return c.JSON(&fiber.Map{
+		"status": http.StatusOK,
+		"data": &fiber.Map{
+			"mealPlan": mealPlans,
+		},
+	})
+}
+
+func GenerateExercise(c *fiber.Ctx, app FitnessApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	startDateStr := c.Query("start_date")
+	var startDate time.Time
+
+	var err error
+
+	// If start_date is provided, try to parse it, otherwise use today's date
+	if startDateStr != "" {
+		startDate, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"status": http.StatusBadRequest,
+				"data": &fiber.Map{
+					"message": "invalid start_date format, expected YYYY-MM-DD",
+				},
+			})
+		}
+	} else {
+		startDate = time.Now() // Default to today if no start_date is provided
+	}
+
+	mealPlans, err := app.GenerateExercise(userId, startDate)
+
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"status": http.StatusBadRequest,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			},
+		})
+	}
+
+	return c.JSON(&fiber.Map{
+		"status": http.StatusOK,
+		"data": &fiber.Map{
+			"mealPlan": mealPlans,
+		},
+	})
+}
+
+func ToggleInstructionCompletion(c *fiber.Ctx, app FitnessApp) error {
+	instructionID, err := c.ParamsInt("id")
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	err = app.ToggleInstructionCompletion(uint(instructionID))
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message": "Successfully toggle instruction completion",
+		}},
+	)
+}
+
+func ToggleAllInstructionCompletion(c *fiber.Ctx, app FitnessApp) error {
+	exerciseID, err := c.ParamsInt("id")
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	err = app.ToggleAllInstructionCompletion(uint(exerciseID))
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message": "Successfully toggle instruction completion",
+		}},
+	)
+}
+
+func ToggleDietCompletion(c *fiber.Ctx, app FitnessApp) error {
+	instructionID, err := c.ParamsInt("id")
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	err = app.ToggleDietCompletion(uint(userId), uint(instructionID))
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message": "Successfully toggle diet completion",
+		}},
+	)
 }

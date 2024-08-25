@@ -18,7 +18,7 @@ type Diet struct {
 }
 
 type Meal struct {
-	Name     string `json:"string"`
+	Name     string `json:"name"`
 	Type     string `json:"type"` //either breakfast, lunch, dinner or snack
 	Calories int    `json:"calories"`
 	Protein  int    `json:"protein"` // in grams

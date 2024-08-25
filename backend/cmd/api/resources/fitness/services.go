@@ -57,7 +57,7 @@ func (u FitnessApp) IncreaseWaterConsumption(userId int, startDate time.Time) (m
 	return water, err
 }
 
-func generateThreeMealsForHealthConditionAndAllergies(userID int, db *gorm.DB, openAI *openai.Client) ([]models.Diet, error) {
+func generateThreeMealsForHealthConditionAndAllergies(userID int, db *gorm.DB, openAI *openai.Client, date time.Time) ([]models.Diet, error) {
 	// Initialize mealPlans
 	var mealPlans []models.Diet
 
@@ -85,7 +85,7 @@ func generateThreeMealsForHealthConditionAndAllergies(userID int, db *gorm.DB, o
 	messages := []openai.ChatCompletionMessage{
 		{
 			Role:    "system",
-			Content: "You are a nutrition expert who generates meal plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{ 'name': 'name of food','type':breakfast', 'calories': 100, 'protein': 20,'fats': 50, 'carbs': 130} No explanation, No other sentence and dont include ```json ``` tag.",
+			Content: "You are a nutrition expert who generates meal plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{ 'name': 'name of food','type':breakfast', 'calories': 100, 'protein': 20,'fats': 50, 'carbs': 130} No explanation, No other sentence and dont include ```json ``` tag, just the array of object, dont nest it in another object with any property such as meals, dont do this {'meal':[{}]}, do this [{}]. Always use double quote of the properties",
 		},
 		{
 			Role: "user",
@@ -126,8 +126,9 @@ func generateThreeMealsForHealthConditionAndAllergies(userID int, db *gorm.DB, o
 			Carbs:     int(meal.Carbs),
 			Fats:      int(meal.Fats),
 			Photo:     generateMealImage(prompt, meal.Name, openAI), // Generate meal image using DALL-E
-			CreatedAt: time.Now(),
+			CreatedAt: date,
 		}
+		db.Create(&mealPlan)
 		mealPlans = append(mealPlans, mealPlan)
 	}
 
@@ -144,7 +145,7 @@ func generateMealsForUser(userID int, db *gorm.DB, openAI *openai.Client) error 
 		return errors.New("three meals already exist for today")
 	}
 
-	mealPlans, err := generateThreeMealsForHealthConditionAndAllergies(userID, db, openAI)
+	mealPlans, err := generateThreeMealsForHealthConditionAndAllergies(userID, db, openAI, time.Now())
 	if err != nil {
 		fmt.Println(err.Error())
 		return errors.New("failed to generate meal plans")
@@ -165,9 +166,10 @@ func generateMealImage(prompt, title string, client *openai.Client) string {
 	// Use DALL-E to generate an image of the meal
 	reqUrl := openai.ImageRequest{
 		Prompt:         prompt,
-		Size:           openai.CreateImageSize512x512,
+		Size:           openai.CreateImageSize1792x1024,
 		ResponseFormat: openai.CreateImageResponseFormatURL,
 		N:              1,
+		Model:          openai.CreateImageModelDallE3,
 	}
 
 	ctx := context.Background()
@@ -183,7 +185,7 @@ func generateMealImage(prompt, title string, client *openai.Client) string {
 	return url
 }
 
-func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.Client) ([]models.Exercise, error) {
+func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.Client, startDate time.Time) ([]models.Exercise, error) {
 	// Initialize exercisePlans
 	var exercisePlans []models.Exercise
 
@@ -204,7 +206,7 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 	messages := []openai.ChatCompletionMessage{
 		{
 			Role:    "system",
-			Content: "You are a exercise/gym expert who generates exercise plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{'name': 'Push-Up Routine','total_duration': 15,'instructions': [{'title': 'Warm-Up','content': 'Perform a light warm-up for 5 minutes to prepare your muscles.','minutes': 5,},{'title': 'Push-Ups','content': 'Perform push-ups for 3 sets of 10 repetitions.','minutes': 10,}]} No explanation, No other sentence and dont include ```json ``` tag.",
+			Content: "You are a exercise/gym expert who generates exercise plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{'name': 'Push-Up Routine','total_duration': 15,'instructions': [{'title': 'Warm-Up','content': 'Perform a light warm-up for 5 minutes to prepare your muscles.','minutes': 5,},{'title': 'Push-Ups','content': 'Perform push-ups for 3 sets of 10 repetitions.','minutes': 10,}]} No explanation, No other sentence and dont include ```json ``` tag , just the array of object, dont nest it in another object with any property such as meals, dont do this {'exercises':[{}]}, do this [{}]. Always use double quote of the properties",
 		},
 		{
 			Role: "user",
@@ -243,8 +245,9 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 			Instructions:  exercise.Instructions, // Generate meal image using DALL-E
 			TotalDuration: exercise.TotalDuration,
 			Photo:         generateMealImage(prompt, exercise.Name, openAI),
-			CreatedAt:     time.Now(),
+			CreatedAt:     startDate,
 		}
+		db.Create(&mealPlan)
 		exercisePlans = append(exercisePlans, mealPlan)
 	}
 
@@ -261,7 +264,7 @@ func generateExerciseForUser(userID int, db *gorm.DB, openAI *openai.Client) err
 		return errors.New("exercise already exist for today")
 	}
 
-	exercisePlans, err := generateExerciseForHealthCondition(userID, db, openAI)
+	exercisePlans, err := generateExerciseForHealthCondition(userID, db, openAI, time.Now())
 	if err != nil {
 		fmt.Println(err.Error())
 		return errors.New("failed to generate exercise plans")
@@ -278,8 +281,130 @@ func generateExerciseForUser(userID int, db *gorm.DB, openAI *openai.Client) err
 
 }
 
-func (u FitnessApp) GenerateDiet(userID int) {
-	// err := generateMealsForUser(userID, u.DB, u.OpenAiClient)
-	// generateMealImage("waakye", u.OpenAiClient)
-	// fmt.Println("Generate Diet Error", err.Error())
+func fetchThreeDayMeals(userID int, db *gorm.DB, openai *openai.Client, startDate time.Time) ([]DailyMeals, error) {
+	var dailyMealPlans []DailyMeals
+
+	formattedDate := startDate.Format("2006-01-02")
+
+	mealsForDay := []models.Diet{}
+
+	var existingMeal []models.Diet
+	result := db.Where("user_id = ? AND DATE(created_at) = ?", userID, formattedDate).Limit(3).Find(&existingMeal)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(existingMeal) == 3 {
+		mealsForDay = append(mealsForDay, existingMeal...)
+	} else {
+		newMeals, err := generateThreeMealsForHealthConditionAndAllergies(userID, db, openai, startDate)
+		if err != nil {
+			return nil, err
+		}
+
+		mealsForDay = append(mealsForDay, newMeals...)
+	}
+
+	dailyMealPlans = append(dailyMealPlans, DailyMeals{
+		Date:  formattedDate,
+		Meals: mealsForDay,
+	})
+
+	return dailyMealPlans, nil
+}
+
+func fetchThreeDayExercise(userID int, db *gorm.DB, openai *openai.Client, startDate time.Time) ([]DailyExercise, error) {
+	var dailyExercisePlans []DailyExercise
+
+	formattedDate := startDate.Format("2006-01-02")
+
+	exercisesForDay := []models.Exercise{}
+
+	var existingExercise []models.Exercise
+	result := db.Where("user_id = ? AND DATE(created_at) = ?", userID, formattedDate).Limit(3).Preload("Instructions").Find(&existingExercise)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(existingExercise) == 3 {
+		exercisesForDay = append(exercisesForDay, existingExercise...)
+	} else {
+		newMeals, err := generateExerciseForHealthCondition(userID, db, openai, startDate)
+		if err != nil {
+			return nil, err
+		}
+
+		exercisesForDay = append(exercisesForDay, newMeals...)
+	}
+
+	dailyExercisePlans = append(dailyExercisePlans, DailyExercise{
+		Date:     formattedDate,
+		Exercise: exercisesForDay,
+	})
+
+	return dailyExercisePlans, nil
+}
+
+func (u FitnessApp) GenerateDiet(userID int, startDate time.Time) ([]DailyMeals, error) {
+	response, err := fetchThreeDayMeals(userID, u.DB, u.OpenAiClient, startDate)
+
+	return response, err
+}
+
+func (u FitnessApp) GenerateExercise(userID int, startDate time.Time) ([]DailyExercise, error) {
+	response, err := fetchThreeDayExercise(userID, u.DB, u.OpenAiClient, startDate)
+
+	return response, err
+}
+
+func (u FitnessApp) ToggleInstructionCompletion(instructionID uint) error {
+	var instruction models.ExerciseInstruction
+
+	if err := u.DB.First(&instruction, instructionID).Error; err != nil {
+		return errors.New("instruction not found")
+	}
+
+	instruction.IsCompleted = !instruction.IsCompleted
+
+	if err := u.DB.Save(&instruction).Error; err != nil {
+		return errors.New("failed to update instruction status")
+	}
+
+	return nil
+}
+
+func (u FitnessApp) ToggleAllInstructionCompletion(exerciseID uint) error {
+	var instructions []models.ExerciseInstruction
+	if err := u.DB.Where("exercise_id = ?", exerciseID).Find(&instructions).Error; err != nil {
+		return errors.New("no instructions found for the given exercise")
+	}
+
+	for i := range instructions {
+		instructions[i].IsCompleted = !instructions[i].IsCompleted
+	}
+
+	if err := u.DB.Save(&instructions).Error; err != nil {
+		return errors.New("failed to update instruction statuses")
+	}
+
+	return nil
+}
+
+func (u FitnessApp) ToggleDietCompletion(userID, dietID uint) error {
+	var diet models.Diet
+
+	if err := u.DB.Where("user_id = ?", userID).First(&diet, dietID).Error; err != nil {
+		return errors.New("diet not found")
+	}
+
+	diet.IsCompleted = !diet.IsCompleted
+
+	if err := u.DB.Save(&diet).Error; err != nil {
+		return errors.New("failed to update diet status")
+	}
+
+	return nil
+
 }

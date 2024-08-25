@@ -14,11 +14,12 @@ type Exercise struct {
 }
 
 type ExerciseInstruction struct {
-	ID         uint      `json:"id" gorm:"primaryKey"`
-	Title      string    `json:"title"`
-	ExerciseID uint      `json:"exercise_id"`
-	Content    string    `json:"content"`
-	Minutes    int       `json:"minutes"`
-	CreatedAt  time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt  time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Title       string    `json:"title"`
+	ExerciseID  uint      `json:"exercise_id"`
+	IsCompleted bool      `json:"is_completed" gorm:"default:false"`
+	Content     string    `json:"content"`
+	Minutes     int       `json:"minutes"`
+	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }

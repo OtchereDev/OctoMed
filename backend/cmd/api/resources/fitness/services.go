@@ -206,7 +206,7 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 	messages := []openai.ChatCompletionMessage{
 		{
 			Role:    "system",
-			Content: "You are a exercise/gym expert who generates exercise plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{'name': 'Push-Up Routine','total_duration': 15,'instructions': [{'title': 'Warm-Up','content': 'Perform a light warm-up for 5 minutes to prepare your muscles.','minutes': 5,},{'title': 'Push-Ups','content': 'Perform push-ups for 3 sets of 10 repetitions.','minutes': 10,}]} No explanation, No other sentence and dont include ```json ``` tag , just the array of object, dont nest it in another object with any property such as meals, dont do this {'exercises':[{}]}, do this [{}]. Always use double quote of the properties",
+			Content: "You are a exercise/gym expert who generates exercise plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{'name': 'Push-Up Routine',calories_lost: 3,'total_duration': 15,'instructions': [{'title': 'Warm-Up','content': 'Perform a light warm-up for 5 minutes to prepare your muscles.','minutes': 5,},{'title': 'Push-Ups','content': 'Perform push-ups for 3 sets of 10 repetitions.','minutes': 10,}]} No explanation, No other sentence and dont include ```json ``` tag , just the array of object, dont nest it in another object with any property such as meals, do this [{}]. Always use double quote of the properties and it should be a valid json, not lacking a missing closure",
 		},
 		{
 			Role: "user",
@@ -227,6 +227,7 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 	}
 
 	contentStr := resp.Choices[0].Message.Content
+	fmt.Println(contentStr)
 
 	// Parse the JSON string into a slice of Meal
 	var exercises []models.Exercise
@@ -289,7 +290,7 @@ func fetchThreeDayMeals(userID int, db *gorm.DB, openai *openai.Client, startDat
 	mealsForDay := []models.Diet{}
 
 	var existingMeal []models.Diet
-	result := db.Where("user_id = ? AND DATE(created_at) = ?", userID, formattedDate).Limit(3).Find(&existingMeal)
+	result := db.Where("user_id = ? AND DATE(created_at) = ?", userID, formattedDate).Order("id ASC").Limit(3).Find(&existingMeal)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -322,7 +323,9 @@ func fetchThreeDayExercise(userID int, db *gorm.DB, openai *openai.Client, start
 	exercisesForDay := []models.Exercise{}
 
 	var existingExercise []models.Exercise
-	result := db.Where("user_id = ? AND DATE(created_at) = ?", userID, formattedDate).Limit(3).Preload("Instructions").Find(&existingExercise)
+	result := db.Where("user_id = ? AND DATE(created_at) = ?", userID, formattedDate).Limit(3).Preload("Instructions", func(db *gorm.DB) *gorm.DB {
+		return db.Order("id ASC")
+	}).Find(&existingExercise)
 
 	if result.Error != nil {
 		return nil, result.Error

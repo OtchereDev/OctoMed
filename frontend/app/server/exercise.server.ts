@@ -1,4 +1,8 @@
+import { json } from '@remix-run/node'
+import { IError } from '~/lib/formatZodError'
 import http from '~/lib/http'
+import { IWateConsumption } from '~/types/diet'
+import { IExercise } from '~/types/exercises'
 
 export async function getExerciseDashboard(date: string, access: string) {
   try {
@@ -19,8 +23,8 @@ export async function getExerciseDashboard(date: string, access: string) {
 
     return {
       data: {
-        meals: response?.data?.exercise,
-        water: waterRes?.data?.water_comsumption,
+        exercises: response?.data?.exercises[0].exercise as IExercise[],
+        water: waterRes?.data?.water_comsumption as IWateConsumption,
       },
       status: true,
     }
@@ -83,4 +87,27 @@ export async function toggleExerciseInstructionCompletion(access: string, id: st
       message: error.response.data?.message,
     }
   }
+}
+
+export async function ToggleExerciseCompletion(form: FormData, userToken: string) {
+  const id = (form.get('id') as string) ?? ''
+
+  const response = await toggleExerciseCompletion(userToken, id)
+  console.log(response)
+
+  return json({
+    errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
+    response: response.message,
+  })
+}
+
+export async function ToggleExerciseInstructionCompletion(form: FormData, userToken: string) {
+  const id = (form.get('id') as string) ?? ''
+
+  const response = await toggleExerciseInstructionCompletion(userToken, id)
+
+  return json({
+    errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
+    response: response.message,
+  })
 }

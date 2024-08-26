@@ -567,8 +567,8 @@ const routes = {
     path: "diet-and-exercises",
     index: void 0,
     caseSensitive: void 0,
-    hasLoader: false,
-    hasAction: false,
+    hasLoader: true,
+    hasAction: true,
     hasWorkerLoader: false,
     hasWorkerAction: false,
     module: route9

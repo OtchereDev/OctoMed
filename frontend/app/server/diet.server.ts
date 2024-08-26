@@ -1,4 +1,7 @@
+import { json } from '@remix-run/node'
+import { IError } from '~/lib/formatZodError'
 import http from '~/lib/http'
+import { IMeal, IWateConsumption } from '~/types/diet'
 
 export async function getDietDashboard(date: string, access: string) {
   try {
@@ -19,15 +22,16 @@ export async function getDietDashboard(date: string, access: string) {
 
     return {
       data: {
-        meals: response?.data?.mealPlan,
-        water: waterRes?.data?.water_comsumption,
+        meals: response?.data?.mealPlan[0].meals as IMeal[],
+        water: waterRes?.data?.water_comsumption as IWateConsumption,
       },
       status: true,
     }
   } catch (error: any) {
+    console.log(error?.response?.data?.data?.message)
     return {
       status: false,
-      message: error.response.data?.message,
+      message: error?.response?.data?.data?.message,
     }
   }
 }
@@ -82,4 +86,15 @@ export async function toggleMealCompletion(access: string, id: string) {
       message: error.response.data?.message,
     }
   }
+}
+
+export async function ToggleMealCompletion(form: FormData, userToken: string) {
+  const id = (form.get('id') as string) ?? ''
+
+  const response = await toggleMealCompletion(userToken, id)
+
+  return json({
+    errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
+    response: response.message,
+  })
 }

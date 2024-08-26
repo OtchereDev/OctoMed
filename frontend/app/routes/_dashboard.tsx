@@ -1,6 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node'
 import { Link, NavLink, Outlet, redirect } from '@remix-run/react'
-import { useState } from 'react'
 import SideImage from '~/assets/images/dashboard-sidebar.svg'
 import Octavia from '~/assets/images/octavia.png'
 import NotificationSheet from '~/components/shared/NotificationSheet'
@@ -96,9 +95,8 @@ export const meta: MetaFunction = () => [
 ]
 
 export default function DashboardLayout() {
-  const [selected, setSelected] = useState('Dashboard')
   return (
-    <section className="max-h-screen w-full lg:grid lg:grid-cols-[280px,auto]">
+    <section className="h-screen max-h-screen w-full overflow-hidden lg:grid lg:grid-cols-[280px,auto]">
       <section className="hidden h-screen overflow-scroll lg:block">
         <aside className="relative hidden h-full w-[280px] flex-col border-r pb-[30px] lg:flex">
           <div className="relative flex items-center overflow-hidden px-6 pb-[20px] pt-[20px] text-white">
@@ -130,7 +128,7 @@ export default function DashboardLayout() {
           </div>
         </aside>
       </section>
-      <section className="relative flex flex-col lg:h-screen lg:min-h-screen lg:px-10">
+      <section className="relative flex flex-col lg:h-screen lg:max-h-screen lg:min-h-screen lg:px-10">
         <nav className="fixed left-0 top-0 z-10 flex w-full items-center justify-between border-b border-[#D0D5DD] bg-white px-7 py-5 lg:relative lg:px-0">
           <LogoSM className="h-[27.22px] w-[35px] lg:hidden" />
           <p className="hidden font-montserrat text-xl font-semibold text-[#333] lg:block">

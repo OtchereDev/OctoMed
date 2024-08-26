@@ -7,6 +7,7 @@ type Exercise struct {
 	Name          string                `json:"name"`
 	UserID        uint                  `json:"user_id"`
 	TotalDuration int                   `json:"total_duration"`
+	CaloriesLost  int                   `json:"calories_lost" gorm:"default:0"`
 	Instructions  []ExerciseInstruction `json:"instructions"`
 	Photo         string                `json:"photo"`
 	CreatedAt     time.Time             `json:"created_at" gorm:"autoCreateTime"`

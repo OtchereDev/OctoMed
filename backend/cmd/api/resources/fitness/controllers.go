@@ -1,8 +1,10 @@
 package fitness
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/OtchereDev/ProjectAPI/pkg/utils"
@@ -104,8 +106,11 @@ func GenerateDiet(c *fiber.Ctx, app FitnessApp) error {
 
 	// If start_date is provided, try to parse it, otherwise use today's date
 	if startDateStr != "" {
-		startDate, err = time.Parse("2006-01-02", startDateStr)
+		split := strings.Split(startDateStr, "T")
+		startDate, err = time.Parse("2006-01-02", split[0])
 		if err != nil {
+
+			fmt.Println(startDateStr, err.Error())
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"status": http.StatusBadRequest,
 				"data": &fiber.Map{
@@ -147,7 +152,8 @@ func GenerateExercise(c *fiber.Ctx, app FitnessApp) error {
 
 	// If start_date is provided, try to parse it, otherwise use today's date
 	if startDateStr != "" {
-		startDate, err = time.Parse("2006-01-02", startDateStr)
+		split := strings.Split(startDateStr, "T")
+		startDate, err = time.Parse("2006-01-02", split[0])
 		if err != nil {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"status": http.StatusBadRequest,
@@ -236,7 +242,7 @@ func ToggleAllInstructionCompletion(c *fiber.Ctx, app FitnessApp) error {
 	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
 		"status": 200,
 		"data": &fiber.Map{
-			"message": "Successfully toggle instruction completion",
+			"message": " Successfully toggle exercise completion",
 		}},
 	)
 }
@@ -269,7 +275,7 @@ func ToggleDietCompletion(c *fiber.Ctx, app FitnessApp) error {
 	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
 		"status": 200,
 		"data": &fiber.Map{
-			"message": "Successfully toggle diet completion",
+			"message": "Successfully toggle instruction completion",
 		}},
 	)
 }

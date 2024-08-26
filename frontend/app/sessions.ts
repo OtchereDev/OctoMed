@@ -12,8 +12,6 @@ type SessionFlashData = {
   toast: string
 }
 
-// TODO: expire user session in 24hrs
-
 const { getSession, commitSession, destroySession } = createCookieSessionStorage<
   SessionData,
   SessionFlashData
@@ -26,6 +24,7 @@ const { getSession, commitSession, destroySession } = createCookieSessionStorage
     sameSite: 'lax',
     secrets: ['s3cret1'],
     secure: true,
+    maxAge: 24 * 60 * 60,
   },
 })
 

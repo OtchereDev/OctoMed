@@ -331,3 +331,29 @@ func LeaveAReview(c *fiber.Ctx, app AppointmentApp) error {
 		}},
 	)
 }
+
+func GetAppointmentDetailsByMeetingId(c *fiber.Ctx, app AppointmentApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+	appointmentID := c.Params("id")
+
+	appt, err := app.GetAppointmentDetailsByMeetingId(userId, appointmentID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message":     "Successfully fetched appointment",
+			"appointment": appt,
+		}},
+	)
+
+}

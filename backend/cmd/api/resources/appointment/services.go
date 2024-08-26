@@ -194,12 +194,11 @@ func (u AppointmentApp) GetOrGenerateMeetingLink(user int, aId int) (string, err
 		return "", result.Error
 	}
 
-	// TODO: Remember to turn this back
 	// // Check if the current time is within the appointment's start and end time
-	// currentTime := time.Now()
-	// if currentTime.Before(appointment.StartTime) || currentTime.After(appointment.EndTime) {
-	// 	return "", errors.New("meeting link can only be accessed during the scheduled appointment time")
-	// }
+	currentTime := time.Now()
+	if currentTime.Before(appointment.StartTime) || currentTime.After(appointment.EndTime) {
+		return "", errors.New("meeting link can only be accessed during the scheduled appointment time")
+	}
 
 	if appointment.MeetingLink == "" {
 		newLink, _ := GenerateUniqueMeetingLink(db)
@@ -246,4 +245,22 @@ func (u AppointmentApp) LeaveAReview(rating models.Rating) error {
 	}
 
 	return nil
+}
+
+func (u AppointmentApp) GetAppointmentDetailsByMeetingId(user int, aId string) (*models.Appointment, error) {
+	var appointment models.Appointment
+
+	db := u.DB
+
+	result := db.Where("is_deleted = ?", false).
+		Where("user_id = ?", user).
+		Where("meeting_link = ?", aId).
+		Preload("Doctor").
+		First(&appointment)
+
+	if appointment.ID == 0 {
+		return nil, errors.New("appointment not found")
+	}
+
+	return &appointment, result.Error
 }

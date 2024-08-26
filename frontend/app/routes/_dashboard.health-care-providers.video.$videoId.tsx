@@ -17,7 +17,7 @@ export type VideoBoxData = {
   rtmToken: string
   appId: string
   channel: string
-  username: number
+  username: string
   appointment: IAppointment['appointments'][0]
 }
 
@@ -25,10 +25,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const id = params['videoId'] as string
   const session = await getSession(request.headers.get('Cookie'))
   const accessToken = session.get('accessToken')!
-  const userId = session.get('id')
+  const userId = session.get('id')!
 
   try {
-    const req = await http.get(`/appointments/${id}`, {
+    const req = await http.get(`/appointments/meeting/${id}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
@@ -44,8 +44,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     const channel = params.videoId as string
-    const username = Date.now()
-    const time = Math.floor(username / 1000) + 600
+    const username = `user_${userId}`
+    const time = Math.floor(Date.now() / 1000) + 600
     const rtcToken = RtcTokenBuilder.buildTokenWithUid(
       APP_ID,
       CERTIFICATE,
@@ -57,7 +57,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const rtmToken = RtmTokenBuilder.buildToken(
       APP_ID,
       CERTIFICATE,
-      String(username),
+      username,
       RtmRole.Rtm_User,
       time
     )
@@ -73,6 +73,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     return json(data)
   } catch (errors: any) {
+    console.log(errors)
     return redirect('/health-care-providers')
   }
 }
@@ -131,68 +132,6 @@ export default function WatchVideo() {
         </Avatar>
       </div>
 
-      {/* <div className="mt-16 rounded-[20px] border">
-        <div className="border-b p-6 font-montserrat lg:flex lg:items-center lg:justify-between">
-          <div className="flex items-center gap-2 font-semibold text-[#333]">
-            <Chat />
-            <h2 className="text-lg">Chat with {appointment.doctor.name}</h2>
-          </div>
-          <div className="mt-4 flex items-center gap-3 font-raleway lg:mt-0">
-            <button className="flex gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] px-[18px] py-[10px] font-semibold text-primary">
-              <Mute />
-              Mute
-            </button>
-            <button className="flex items-center gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] px-[18px] py-[10px] text-sm font-semibold text-primary">
-              <Camera />
-              Camera On
-            </button>
-            <button className="flex gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] p-[12px] font-semibold text-primary">
-              <FullscreenIcon />
-            </button>
-          </div>
-        </div>
-        <div className="lg:flex">
-          <div className="p-6 lg:flex-[2]">
-            <div className="relative flex h-[503px] items-center justify-center rounded-[16px] bg-[#4D5061]">
-              <Avatar className="h-[150px] w-[150px] border-4 border-white">
-                <AvatarImage src={appointment.doctor.profile} />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-
-              <div className="absolute bottom-4 right-4 flex h-[96px] w-[150px] items-center justify-center rounded-[10px] border-2">
-                <Avatar className="h-[52px] w-[52px] border-4 border-white">
-                  <AvatarImage src={'https://github.com/shadcn.png'} />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
-          </div>
-          <div className="border-t p-6 lg:flex-1 lg:border-l lg:border-t-0">
-            <div className="flex h-[503px] flex-col font-montserrat">
-              <div className="flex flex-1 flex-col gap-3 overflow-scroll">
-                <div className="max-w-[284px] rounded-[12px] rounded-bl-none bg-[#D0D5DD4D] px-4 py-[14px] text-sm">
-                  <p>Hello. I’m Daniel. How may I help you today?</p>
-                </div>
-                <div className="ml-auto max-w-[284px] rounded-[12px] rounded-br-none bg-[#F5CB5C] px-4 py-[14px] text-sm">
-                  <p>
-                    I've been struggling with anxiety, especially during my workouts. What
-                    strategies or techniques do you use to manage anxiety w...
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4 border-t pt-4">
-                <input
-                  placeholder="Enter your message here"
-                  className="flex-1 rounded-[8px] border px-[14px] py-[10px] outline-none"
-                />
-                <button className="rounded-[8px] bg-primary p-3 text-white">
-                  <Send />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> */}
       <Page data={data} />
     </section>
   )

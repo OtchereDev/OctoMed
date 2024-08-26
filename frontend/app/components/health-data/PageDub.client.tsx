@@ -2,7 +2,6 @@ import AgoraRTC, {
   AgoraRTCProvider,
   LocalUser,
   RemoteUser,
-  useIsConnected,
   useJoin,
   useLocalCameraTrack,
   useLocalMicrophoneTrack,
@@ -27,7 +26,6 @@ export const PageDub = ({ data }: { data: VideoBoxData }) => {
 
 const Basics = ({ data }: { data: VideoBoxData }) => {
   const [calling, setCalling] = useState(false)
-  const isConnected = useIsConnected() // Store the user's connection status
   const { appointment } = data
   useJoin(
     {
@@ -47,8 +45,7 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
   const remoteUsers = useRemoteUsers()
 
   useEffect(() => {
-    // TODO: Remember to turn this back
-    // setCalling(true)
+    setCalling(true)
   }, [])
 
   return (
@@ -107,30 +104,6 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
               </div>
             </div>
           </div>
-          {/* <div className="border-t p-6 lg:flex-1 lg:border-l lg:border-t-0">
-            <div className="flex h-[503px] flex-col font-montserrat">
-              <div className="flex flex-1 flex-col gap-3 overflow-scroll">
-                <div className="max-w-[284px] rounded-[12px] rounded-bl-none bg-[#D0D5DD4D] px-4 py-[14px] text-sm">
-                  <p>Hello. I’m Daniel. How may I help you today?</p>
-                </div>
-                <div className="ml-auto max-w-[284px] rounded-[12px] rounded-br-none bg-[#F5CB5C] px-4 py-[14px] text-sm">
-                  <p>
-                    I've been struggling with anxiety, especially during my workouts. What
-                    strategies or techniques do you use to manage anxiety w...
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4 border-t pt-4">
-                <input
-                  placeholder="Enter your message here"
-                  className="flex-1 rounded-[8px] border px-[14px] py-[10px] outline-none"
-                />
-                <button className="rounded-[8px] bg-primary p-3 text-white">
-                  <Send />
-                </button>
-              </div>
-            </div>
-          </div> */}
 
           <VideoChat
             app_id={data.appId}

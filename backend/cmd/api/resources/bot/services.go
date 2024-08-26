@@ -53,7 +53,7 @@ func (u BotApp) GetAllMyChats(userID int) ([]models.BotChat, error) {
 	db := u.DB
 
 	var chats []models.BotChat
-	result := db.Where("user_id = ?", userID).Find(&chats)
+	result := db.Where("user_id = ?", userID).Order("created_at DESC").Find(&chats)
 
 	return chats, result.Error
 }

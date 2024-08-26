@@ -26,28 +26,27 @@ import {
   DrawerTrigger,
 } from '~/components/ui/drawer'
 import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
-import { commitSession, getSession } from '~/sessions'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   if (await preventUnAuthorizedUser(request)) {
     return redirect('/login')
   }
 
-  return json({})
+  return json({
+    value: 'This is a test',
+  })
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const session = await getSession(request.headers.get('Cookie'))
+  // const session = await getSession(request.headers.get('Cookie'))
 
-  session.unset('accessToken')
-  session.unset('email')
-  session.unset('id')
+  // session.unset('accessToken')
+  // session.unset('email')
+  // session.unset('id')
+  const form = await request.formData()
+  console.log('rvlahe:', form.get('rvlahe'))
 
-  return redirect('/', {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  })
+  return json({})
 }
 
 const links = [

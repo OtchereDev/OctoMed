@@ -1,4 +1,5 @@
 import http from '~/lib/http'
+import { IChat, IChatMessage } from '~/types/bot'
 
 export async function getAllMyChats(access: string) {
   try {
@@ -11,7 +12,7 @@ export async function getAllMyChats(access: string) {
     const response = request.data
 
     return {
-      chats: response.data.chats,
+      chats: response.data.chats as IChat[],
       status: true,
     }
   } catch (error: any) {
@@ -33,7 +34,7 @@ export async function getChatDetail(access: string, id: string) {
     const response = request.data
 
     return {
-      chat: response.data.chat,
+      chat: response.data.chat as IChat,
       status: true,
     }
   } catch (error: any) {
@@ -59,7 +60,7 @@ export async function createNewChat(access: string) {
     const response = request.data
 
     return {
-      chat: response.data.chat,
+      chat: response.data.chat as IChat,
       status: true,
     }
   } catch (error: any) {
@@ -86,7 +87,7 @@ export async function sendMessageToChat(access: string, id: string, content: str
 
     return {
       message: response.data.message,
-      response: response.data.response, // response from the chat agent
+      response: response.data.response as IChatMessage, // response from the chat agent
       status: true,
     }
   } catch (error: any) {

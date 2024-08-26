@@ -4,6 +4,7 @@ type SessionData = {
   accessToken: string
   email: string
   id: number
+  firstName: string
 }
 
 type SessionFlashData = {

@@ -1,10 +1,11 @@
-import { Link, useFetcher } from '@remix-run/react'
+import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { Expand, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import Octavia from '~/assets/images/octavia.png'
 import Bg from '~/assets/octavia-bg.png'
+import { loader } from '~/routes/_dashboard'
 import { action } from '~/routes/octavia'
 import { IChatMessage } from '~/types/bot'
 import {
@@ -21,6 +22,8 @@ import EllipseLoader from './EllipseLoader'
 export default function OctaviaModal({ children }: { children: React.ReactNode }) {
   const fetcher = useFetcher<typeof action>({ key: 'octavia' })
   const [message, setMessage] = useState('')
+
+  const data = useLoaderData<typeof loader>()
 
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<IChatMessage[]>([])
@@ -60,8 +63,8 @@ export default function OctaviaModal({ children }: { children: React.ReactNode }
         <DialogHeader className="relative h-[144px] p-4 text-left">
           <img src={Bg} className="absolute left-0 top-0 h-full w-full object-cover" />
           <div className="relative flex items-center justify-between pt-3">
-            <DialogTitle className="font-montserrat text-2xl font-semibold text-white">
-              Hi Daniel 👋
+            <DialogTitle className="font-montserrat text-2xl font-semibold capitalize text-white">
+              Hi {data.firstName} 👋
             </DialogTitle>
             <Link to="/chat">
               <button onClick={() => setOpen(false)} className="mt-4 text-white">

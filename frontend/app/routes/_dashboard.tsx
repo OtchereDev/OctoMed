@@ -26,14 +26,18 @@ import {
   DrawerTrigger,
 } from '~/components/ui/drawer'
 import { preventUnAuthorizedUser } from '~/lib/preventUnAuthorizedUser'
+import { getSession } from '~/sessions'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   if (await preventUnAuthorizedUser(request)) {
     return redirect('/login')
   }
 
+  const session = await getSession(request.headers.get('Cookie'))
+  const firstName = session.get('firstName')
+
   return json({
-    value: 'This is a test',
+    firstName,
   })
 }
 

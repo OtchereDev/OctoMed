@@ -40,6 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
       session.set('accessToken', response.access_token)
       session.set('id', response.user.id)
       session.set('email', response.user.email)
+      session.set('firstName', response.user.full_name.split(' ')[0])
 
       if (!response.user.skip_onboarding) {
         if (!response.user.biodata_setup) {

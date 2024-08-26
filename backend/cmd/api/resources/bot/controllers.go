@@ -36,7 +36,7 @@ func CreateChat(c *fiber.Ctx, app BotApp) error {
 	user, _ := utils.SerializeRequestUser(c)
 	userId, _ := strconv.Atoi(user.UserID)
 
-	err := app.CreateChat(userId)
+	chat, err := app.CreateChat(userId)
 
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{
@@ -49,6 +49,7 @@ func CreateChat(c *fiber.Ctx, app BotApp) error {
 	return c.JSON(&fiber.Map{
 		"status": 200,
 		"data": &fiber.Map{
+			"chat":    chat,
 			"message": "Chats successfully created",
 		}})
 }

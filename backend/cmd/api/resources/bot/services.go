@@ -58,7 +58,7 @@ func (u BotApp) GetAllMyChats(userID int) ([]models.BotChat, error) {
 	return chats, result.Error
 }
 
-func (u BotApp) CreateChat(userID int) error {
+func (u BotApp) CreateChat(userID int) (models.BotChat, error) {
 	db := u.DB
 	var botChat models.BotChat
 
@@ -73,7 +73,7 @@ func (u BotApp) CreateChat(userID int) error {
 
 	result := db.Create(&botChat)
 
-	return result.Error
+	return botChat, result.Error
 
 }
 

@@ -21,11 +21,11 @@ func (a FitnessApp) Routes() {
 		return GenerateExercise(c, a)
 	})
 
-	a.App.Post("/fitness/my-exercise/:id/toggle", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
+	a.App.Post("/fitness/my-exercise/:id/toggle-instruction", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return ToggleInstructionCompletion(c, a)
 	})
 
-	a.App.Post("/fitness/my-exercise/:id/toggle-instructions", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
+	a.App.Post("/fitness/my-exercise/:id/toggle", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return ToggleAllInstructionCompletion(c, a)
 	})
 

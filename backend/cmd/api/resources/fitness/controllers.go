@@ -97,7 +97,7 @@ func GenerateDiet(c *fiber.Ctx, app FitnessApp) error {
 	user, _ := utils.SerializeRequestUser(c)
 	userId, _ := strconv.Atoi(user.UserID)
 
-	startDateStr := c.Query("start_date")
+	startDateStr := c.Query("date")
 	var startDate time.Time
 
 	var err error
@@ -140,7 +140,7 @@ func GenerateExercise(c *fiber.Ctx, app FitnessApp) error {
 	user, _ := utils.SerializeRequestUser(c)
 	userId, _ := strconv.Atoi(user.UserID)
 
-	startDateStr := c.Query("start_date")
+	startDateStr := c.Query("date")
 	var startDate time.Time
 
 	var err error
@@ -160,7 +160,7 @@ func GenerateExercise(c *fiber.Ctx, app FitnessApp) error {
 		startDate = time.Now() // Default to today if no start_date is provided
 	}
 
-	mealPlans, err := app.GenerateExercise(userId, startDate)
+	exercises, err := app.GenerateExercise(userId, startDate)
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
@@ -174,7 +174,7 @@ func GenerateExercise(c *fiber.Ctx, app FitnessApp) error {
 	return c.JSON(&fiber.Map{
 		"status": http.StatusOK,
 		"data": &fiber.Map{
-			"mealPlan": mealPlans,
+			"exercises": exercises,
 		},
 	})
 }

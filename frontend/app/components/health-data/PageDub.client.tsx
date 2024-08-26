@@ -9,11 +9,12 @@ import AgoraRTC, {
   usePublish,
   useRemoteUsers,
 } from 'agora-rtc-react'
-import { CameraOff, Mic, Send } from 'lucide-react'
+import { CameraOff, Mic } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { VideoBoxData } from '~/routes/channel.$channelId'
+import { VideoBoxData } from '~/routes/_dashboard.health-care-providers.video.$videoId'
 import { Camera, Chat, Mute } from '../shared/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import VideoChat from './VideoChat'
 
 export const PageDub = ({ data }: { data: VideoBoxData }) => {
   const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
@@ -46,38 +47,12 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
   const remoteUsers = useRemoteUsers()
 
   useEffect(() => {
-    setCalling(true)
+    // TODO: Remember to turn this back
+    // setCalling(true)
   }, [])
 
   return (
     <>
-      {/* <div className="room">
-        {
-          <div className="user-list">
-         
-            {remoteUsers.map((user) => (
-              <div className="user h-[200px] w-[200px]" key={user.uid}>
-                <RemoteUser
-                  cover="https://www.agora.io/en/wp-content/uploads/2022/10/3d-spatial-audio-icon.svg"
-                  user={user}
-                >
-                  <samp className="user-name">{user.uid}</samp>
-                </RemoteUser>
-              </div>
-            ))}
-          </div>
-        }
-      </div>
-
-      <div className="control">
-        <button
-          className={`btn btn-phone ${calling ? 'btn-phone-active' : ''}`}
-          onClick={() => setCalling((a) => !a)}
-        >
-          {calling ? <i className="i-phone-hangup" /> : <i className="i-mdi-phone" />}
-        </button>
-      </div> */}
-
       <div className="mt-16 rounded-[20px] border">
         <div className="border-b p-6 font-montserrat lg:flex lg:items-center lg:justify-between">
           <div className="flex items-center gap-2 font-semibold text-[#333]">
@@ -99,9 +74,6 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
               {cameraOn ? <CameraOff /> : <Camera />}
               Camera {cameraOn ? 'off' : 'on'}
             </button>
-            {/* <button className="flex gap-2 rounded-[8px] border-[#09AEF21A] bg-[#DCECF4] p-[12px] font-semibold text-primary">
-              <FullscreenIcon />
-            </button> */}
           </div>
         </div>
         <div className="lg:flex">
@@ -135,7 +107,7 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
               </div>
             </div>
           </div>
-          <div className="border-t p-6 lg:flex-1 lg:border-l lg:border-t-0">
+          {/* <div className="border-t p-6 lg:flex-1 lg:border-l lg:border-t-0">
             <div className="flex h-[503px] flex-col font-montserrat">
               <div className="flex flex-1 flex-col gap-3 overflow-scroll">
                 <div className="max-w-[284px] rounded-[12px] rounded-bl-none bg-[#D0D5DD4D] px-4 py-[14px] text-sm">
@@ -158,7 +130,14 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
+
+          <VideoChat
+            app_id={data.appId}
+            channel={data.channel}
+            token={data.rtmToken}
+            user_id={data.username.toString()}
+          />
         </div>
       </div>
     </>

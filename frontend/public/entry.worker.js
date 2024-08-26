@@ -717,23 +717,23 @@ const routes = {
     hasWorkerAction: false,
     module: route21
   },
-  "routes/channel.$channelId": {
-    id: "routes/channel.$channelId",
-    parentId: "root",
-    path: "channel/:channelId",
-    index: void 0,
-    caseSensitive: void 0,
-    hasLoader: true,
-    hasAction: false,
-    hasWorkerLoader: false,
-    hasWorkerAction: false,
-    module: route22
-  },
   "routes/_dashboard._index": {
     id: "routes/_dashboard._index",
     parentId: "routes/_dashboard",
     path: void 0,
     index: true,
+    caseSensitive: void 0,
+    hasLoader: false,
+    hasAction: false,
+    hasWorkerLoader: false,
+    hasWorkerAction: false,
+    module: route22
+  },
+  "routes/_dashboard.chat": {
+    id: "routes/_dashboard.chat",
+    parentId: "routes/_dashboard",
+    path: "chat",
+    index: void 0,
     caseSensitive: void 0,
     hasLoader: false,
     hasAction: false,

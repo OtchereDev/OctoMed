@@ -194,6 +194,7 @@ func (u AppointmentApp) GetOrGenerateMeetingLink(user int, aId int) (string, err
 		return "", result.Error
 	}
 
+	// TODO: Remember to turn this back
 	// // Check if the current time is within the appointment's start and end time
 	// currentTime := time.Now()
 	// if currentTime.Before(appointment.StartTime) || currentTime.After(appointment.EndTime) {

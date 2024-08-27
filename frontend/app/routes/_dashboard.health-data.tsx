@@ -1,5 +1,6 @@
 import { ActionFunctionArgs, json, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
 import { useSearchParams } from '@remix-run/react'
+import dayjs from 'dayjs'
 import AddHealthData from '~/components/health-data/AddHealthData'
 import BloodGlucose from '~/components/health-data/BloodGlucose'
 import BloodPressure from '~/components/health-data/BloodPressure'
@@ -54,9 +55,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'))
   const accessToken = session.get('accessToken')!
   const url = new URL(request.url)
-  const tab = url.searchParams.get('tab') || 'summary'
+  const date = (url.searchParams.get('date') as string) || ''
+  const dateStr = date?.length ? dayjs(date).format('YYYY-MM-D') : ''
 
-  const response = await fetchMetrics(accessToken)
+  const response = await fetchMetrics(accessToken, dateStr)
 
   return json(response)
 }
@@ -120,7 +122,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function HealthData() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [_, setSearchParams] = useSearchParams()
   return (
     <div className="mt-5 px-5 pb-28 font-montserrat lg:mt-[40px] lg:px-0">
       <h3 className="mb-5 text-lg font-semibold text-[#333] lg:hidden">Health Data</h3>

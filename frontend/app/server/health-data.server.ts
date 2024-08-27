@@ -2,6 +2,7 @@ import { json } from '@remix-run/node'
 import axios from 'axios'
 import { IError } from '~/lib/formatZodError'
 import http from '~/lib/http'
+import { QueryBuilder } from '~/lib/queryBuilder'
 import { IHealthData } from '~/types/health-data'
 
 const handleCreatePulse = async (reading: number, token: string) => {
@@ -134,11 +135,11 @@ const handleCreateHeight = async (reading: number, token: string) => {
   }
 }
 
-const handleCreateSleep = async (reading: number, token: string) => {
+const handleCreateSleep = async (start_hour: number, end_hour: number, token: string) => {
   try {
     const request = await http.post(
       `/metrics/sleeppattern`,
-      { reading },
+      { start_hour, end_hour },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -295,11 +296,11 @@ const handleEditHeight = async (reading: number, id: string, token: string) => {
   }
 }
 
-const handleEditSleep = async (reading: number, id: string, token: string) => {
+const handleEditSleep = async (start_hour: number, end_hour: number, id: string, token: string) => {
   try {
     const request = await http.put(
       `/metrics/sleeppattern/${id}`,
-      { reading },
+      { start_hour, end_hour },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -461,7 +462,7 @@ const handleDeleteSleep = async (id: string, token: string) => {
   }
 }
 
-export const fetchMetrics = async (token: string) => {
+export const fetchMetrics = async (token: string, date: string) => {
   try {
     const allReq: any = []
 
@@ -476,7 +477,7 @@ export const fetchMetrics = async (token: string) => {
 
     allMetrics.forEach((metric) => {
       allReq.push(
-        http.get(`/metrics/${metric}`, {
+        http.get(`/metrics/${metric}${QueryBuilder({ date })}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -505,6 +506,7 @@ export const fetchMetrics = async (token: string) => {
       status: true,
     }
   } catch (error: any) {
+    console.log(error)
     return {
       status: false,
       message: error.response.data?.message,
@@ -585,16 +587,17 @@ export async function createBloodGlucose(form: FormData, userToken: string) {
 }
 
 export async function createSleepPattern(form: FormData, userToken: string) {
-  const reading = (form.get('reading') as string) ?? ''
+  const start_hour = (form.get('start_hour') as string) ?? ''
+  const end_hour = (form.get('end_hour') as string) ?? ''
 
-  if (isNaN(parseInt(reading))) {
+  if (isNaN(parseInt(start_hour)) || isNaN(parseInt(end_hour))) {
     return json({
-      errors: [{ path: 'global', message: 'Reading is required' }] as IError[],
+      errors: [{ path: 'global', message: 'Both start and end hour are required' }] as IError[],
       response: 'Reading is required',
     })
   }
 
-  const response = await handleCreateSleep(parseInt(reading), userToken)
+  const response = await handleCreateSleep(parseInt(start_hour), parseInt(end_hour), userToken)
 
   return json({
     errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],
@@ -838,7 +841,8 @@ export async function updateBloodGlucose(form: FormData, userToken: string) {
 }
 
 export async function updateSleep(form: FormData, userToken: string) {
-  const reading = (form.get('reading') as string) ?? ''
+  const start_hour = (form.get('start_hour') as string) ?? ''
+  const end_hour = (form.get('end_hour') as string) ?? ''
   const id = (form.get('id') as string) ?? ''
 
   if (isNaN(parseInt(id))) {
@@ -848,14 +852,14 @@ export async function updateSleep(form: FormData, userToken: string) {
     })
   }
 
-  if (isNaN(parseInt(reading))) {
+  if (isNaN(parseInt(start_hour)) || isNaN(parseInt(end_hour))) {
     return json({
-      errors: [{ path: 'global', message: 'Reading is required' }] as IError[],
+      errors: [{ path: 'global', message: 'Both start and end hour are required' }] as IError[],
       response: 'Reading is required',
     })
   }
 
-  const response = await handleEditSleep(parseInt(reading), id, userToken)
+  const response = await handleEditSleep(parseInt(start_hour), parseInt(end_hour), id, userToken)
 
   return json({
     errors: (response.status ? [] : [{ path: 'global', message: response.message }]) as IError[],

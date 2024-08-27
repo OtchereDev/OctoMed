@@ -290,9 +290,11 @@ export default function HealthProviders() {
                             Cancel
                           </button>
                         </CancelAppointment>
-                        <button className="flex-1 rounded-[8px] bg-[#E8F3F6] py-[10px] font-semibold text-[#1282A2]">
-                          Re-Schedule
-                        </button>
+                        <BookAppointment doctor={appt.doctor} appt={appt}>
+                          <button className="flex-1 rounded-[8px] bg-[#E8F3F6] py-[10px] font-semibold text-[#1282A2]">
+                            Re-Schedule
+                          </button>
+                        </BookAppointment>
                       </div>
                     </div>
                   </div>

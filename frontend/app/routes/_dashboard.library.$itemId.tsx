@@ -48,12 +48,6 @@ export default function Library() {
             />
             <div className="absolute left-0 top-0 h-full w-full bg-black bg-opacity-70" />
             <div className="relative flex h-full w-full flex-col justify-between">
-              <Link className="hidden lg:block" to="/library">
-                <button className="flex items-center gap-2 font-semibold text-white">
-                  <ArrowLeft size={18} strokeWidth={2.5} />
-                  Back
-                </button>
-              </Link>
               <div className="overflow-hidden font-montserrat text-white">
                 <h1 className="line-clamp-1 text-2xl font-semibold">{resource.title}</h1>
                 <p className="mt-2 line-clamp-3 font-medium lg:line-clamp-1">

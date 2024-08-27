@@ -73,7 +73,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     return json(data)
   } catch (errors: any) {
-    console.log(errors)
     return redirect('/health-care-providers')
   }
 }

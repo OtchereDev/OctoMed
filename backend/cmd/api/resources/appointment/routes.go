@@ -38,6 +38,9 @@ func (a AppointmentApp) AppointmentRoutes() {
 	a.App.Get("/appointments/meeting/:id", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return GetAppointmentDetailsByMeetingId(c, a)
 	})
+	a.App.Get("/appointments/meeting/:id/doctor", func(c *fiber.Ctx) error {
+		return GetAppointmentDetailsByMeetingIdDoc(c, a)
+	})
 	a.App.Get("/appointments/:id", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return AppointmentDetail(c, a)
 	})

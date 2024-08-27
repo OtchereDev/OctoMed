@@ -15,16 +15,16 @@ import { Camera, Chat, Mute } from '../shared/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import VideoChat from './VideoChat'
 
-export const PageDub = ({ data }: { data: VideoBoxData }) => {
+export const PageDub = ({ data, isDoctor }: { data: VideoBoxData; isDoctor?: boolean }) => {
   const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
   return (
     <AgoraRTCProvider client={client}>
-      <Basics data={data} />
+      <Basics isDoctor={isDoctor} data={data} />
     </AgoraRTCProvider>
   )
 }
 
-const Basics = ({ data }: { data: VideoBoxData }) => {
+const Basics = ({ data, isDoctor }: { data: VideoBoxData; isDoctor?: boolean }) => {
   const [calling, setCalling] = useState(false)
   const { appointment } = data
   useJoin(
@@ -54,7 +54,9 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
         <div className="border-b p-6 font-montserrat lg:flex lg:items-center lg:justify-between">
           <div className="flex items-center gap-2 font-semibold text-[#333]">
             <Chat />
-            <h2 className="text-lg">Chat with {appointment.doctor.name}</h2>
+            <h2 className="text-lg">
+              Chat with {isDoctor ? appointment.user.full_name : appointment.doctor.name}
+            </h2>
           </div>
           <div className="mt-4 flex items-center gap-3 font-raleway lg:mt-0">
             <button
@@ -79,12 +81,15 @@ const Basics = ({ data }: { data: VideoBoxData }) => {
               {remoteUsers[0] ? (
                 <RemoteUser cover={appointment.doctor.profile} user={remoteUsers[0]}>
                   <samp className="absolute bottom-2 left-3 font-montserrat text-xs text-white">
-                    {appointment.doctor.name}
+                    {isDoctor ? appointment.user.full_name : appointment.doctor.name}
                   </samp>
                 </RemoteUser>
               ) : (
                 <Avatar className="h-[150px] w-[150px] border-4 border-white">
-                  <AvatarImage src={appointment.doctor.profile} className="object-cover" />
+                  <AvatarImage
+                    src={isDoctor ? 'https://github.com/shadcn.png' : appointment.doctor.profile}
+                    className="object-cover"
+                  />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
               )}

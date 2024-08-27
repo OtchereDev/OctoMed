@@ -269,6 +269,24 @@ func (u AppointmentApp) GetAppointmentDetailsByMeetingId(user int, aId string) (
 	return &appointment, result.Error
 }
 
+func (u AppointmentApp) GetAppointmentDetailsByMeetingIdDoc(aId string) (*models.Appointment, error) {
+	var appointment models.Appointment
+
+	db := u.DB
+
+	result := db.Where("is_deleted = ?", false).
+		Where("meeting_link = ?", aId).
+		Preload("Doctor").
+		Preload("User").
+		First(&appointment)
+
+	if appointment.ID == 0 {
+		return nil, errors.New("appointment not found")
+	}
+
+	return &appointment, result.Error
+}
+
 func GetLastAppointment(userID uint, DB *gorm.DB) (models.Appointment, error) {
 	var appt models.Appointment
 	if err := DB.Where("user_id = ?", userID).Preload("Doctor").Order("created_at desc").First(&appt).Error; err != nil {

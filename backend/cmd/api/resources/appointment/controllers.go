@@ -358,6 +358,31 @@ func GetAppointmentDetailsByMeetingId(c *fiber.Ctx, app AppointmentApp) error {
 
 }
 
+func GetAppointmentDetailsByMeetingIdDoc(c *fiber.Ctx, app AppointmentApp) error {
+
+	appointmentID := c.Params("id")
+
+	appt, err := app.GetAppointmentDetailsByMeetingIdDoc(appointmentID)
+
+	if err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"status": 400,
+			"data": &fiber.Map{
+				"message": err.Error(),
+			}},
+		)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"message":     "Successfully fetched appointment",
+			"appointment": appt,
+		}},
+	)
+
+}
+
 func GetDashboardData(c *fiber.Ctx, app AppointmentApp) error {
 	user, _ := utils.SerializeRequestUser(c)
 	userId, _ := strconv.Atoi(user.UserID)

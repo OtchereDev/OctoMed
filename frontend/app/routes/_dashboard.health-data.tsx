@@ -73,8 +73,6 @@ export async function action({ request }: ActionFunctionArgs) {
     message: 'Unhandles action is being perform',
   } as IError
 
-  console.log(formName)
-
   switch (formName) {
     case 'create-pulse':
       return await createPulse(formData, accessToken)

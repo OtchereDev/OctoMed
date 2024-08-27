@@ -2,6 +2,7 @@ package library
 
 import (
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
+	"gorm.io/gorm"
 )
 
 func (u LibraryApp) GetAllResource(p ResourceListParam) ([]models.Resource, error) {
@@ -42,4 +43,12 @@ func (u LibraryApp) GetResourceDetail(id string) (*models.Resource, error) {
 	result := db.First(&resource, id)
 
 	return &resource, result.Error
+}
+
+func GetLastResource(DB *gorm.DB) (models.Resource, error) {
+	var resource models.Resource
+	if err := DB.Order("created_at desc").First(&resource).Error; err != nil {
+		return resource, err
+	}
+	return resource, nil
 }

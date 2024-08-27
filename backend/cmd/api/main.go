@@ -103,9 +103,10 @@ func main() {
 			Validate: validate,
 		},
 		Appointment: &appointment.AppointmentApp{
-			DB:       db,
-			App:      app,
-			Validate: validate,
+			DB:           db,
+			App:          app,
+			Validate:     validate,
+			OpenAiClient: openaiClient,
 		},
 		BotApp: &bot.BotApp{
 			DB:           db,

@@ -357,3 +357,12 @@ func GetAppointmentDetailsByMeetingId(c *fiber.Ctx, app AppointmentApp) error {
 	)
 
 }
+
+func GetDashboardData(c *fiber.Ctx, app AppointmentApp) error {
+	user, _ := utils.SerializeRequestUser(c)
+	userId, _ := strconv.Atoi(user.UserID)
+
+	response := app.Dashboard(userId)
+
+	return c.JSON(response)
+}

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
+	"gorm.io/gorm"
 )
 
 func (s *MetricApp) CreatePulse(userID uint, reading int) (*models.Pulse, error) {
@@ -51,10 +52,11 @@ func (s *MetricApp) CreateBloodGlucose(userID uint, reading int) (*models.BloodG
 	return bloodGlucose, nil
 }
 
-func (s *MetricApp) CreateSleepPattern(userID uint, reading int) (*models.SleepPattern, error) {
+func (s *MetricApp) CreateSleepPattern(userID uint, startHour, endHour int) (*models.SleepPattern, error) {
 	sleepPattern := &models.SleepPattern{
-		UserID:  userID,
-		Reading: reading,
+		UserID:    userID,
+		StartHour: startHour,
+		EndHour:   endHour,
 	}
 	if err := s.DB.Create(sleepPattern).Error; err != nil {
 		return nil, err
@@ -141,13 +143,14 @@ func (s *MetricApp) UpdateBloodGlucose(userID, glucoseID uint, reading int) (*mo
 	return &bloodGlucose, nil
 }
 
-func (s *MetricApp) UpdateSleepPattern(userID, sleepPatternID uint, reading int) (*models.SleepPattern, error) {
+func (s *MetricApp) UpdateSleepPattern(userID, sleepPatternID uint, startHour, endHour int) (*models.SleepPattern, error) {
 	var sleepPattern models.SleepPattern
 	if err := s.DB.First(&sleepPattern, "id = ? AND user_id = ?", sleepPatternID, userID).Error; err != nil {
 		return nil, err
 	}
 
-	sleepPattern.Reading = reading
+	sleepPattern.StartHour = startHour
+	sleepPattern.EndHour = endHour
 
 	if err := s.DB.Save(&sleepPattern).Error; err != nil {
 		return nil, err
@@ -286,4 +289,52 @@ func (s *MetricApp) GetHeightByDateRange(userID uint, startDate, endDate time.Ti
 		return nil, err
 	}
 	return heights, nil
+}
+
+func GetLastPulse(userID uint, DB *gorm.DB) (models.Pulse, error) {
+	var pulse models.Pulse
+	if err := DB.Where("user_id = ?", userID).Order("created_at desc").First(&pulse).Error; err != nil {
+		return pulse, err
+	}
+	return pulse, nil
+}
+
+func GetLastBloodPressure(userID uint, DB *gorm.DB) (models.BloodPressure, error) {
+	var bloodPressure models.BloodPressure
+	if err := DB.Where("user_id = ?", userID).Order("created_at desc").First(&bloodPressure).Error; err != nil {
+		return bloodPressure, err
+	}
+	return bloodPressure, nil
+}
+
+func GetLastBloodGlucose(userID uint, DB *gorm.DB) (models.BloodGlucose, error) {
+	var bloodGlucose models.BloodGlucose
+	if err := DB.Where("user_id = ?", userID).Order("created_at desc").First(&bloodGlucose).Error; err != nil {
+		return bloodGlucose, err
+	}
+	return bloodGlucose, nil
+}
+
+func GetLastSleepPattern(userID uint, DB *gorm.DB) (models.SleepPattern, error) {
+	var sleepPattern models.SleepPattern
+	if err := DB.Where("user_id = ?", userID).Order("created_at desc").First(&sleepPattern).Error; err != nil {
+		return sleepPattern, err
+	}
+	return sleepPattern, nil
+}
+
+func GetLastWeight(userID uint, DB *gorm.DB) (models.Weight, error) {
+	var weight models.Weight
+	if err := DB.Where("user_id = ?", userID).Order("created_at desc").First(&weight).Error; err != nil {
+		return weight, err
+	}
+	return weight, nil
+}
+
+func GetLastHeight(userID uint, DB *gorm.DB) (models.Height, error) {
+	var height models.Height
+	if err := DB.Where("user_id = ?", userID).Order("created_at desc").First(&height).Error; err != nil {
+		return height, err
+	}
+	return height, nil
 }

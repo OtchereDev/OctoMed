@@ -7,6 +7,10 @@ import (
 
 func (a AppointmentApp) AppointmentRoutes() {
 
+	a.App.Get("/dashboard", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
+		return GetDashboardData(c, a)
+	})
+
 	a.App.Post("/rating/create", middlewares.AuthMiddleware, func(c *fiber.Ctx) error {
 		return LeaveAReview(c, a)
 	})

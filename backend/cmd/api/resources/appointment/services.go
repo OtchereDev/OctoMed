@@ -4,7 +4,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/fitness"
+	"github.com/OtchereDev/ProjectAPI/cmd/api/resources/library"
+	metric "github.com/OtchereDev/ProjectAPI/cmd/api/resources/metrics"
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -263,4 +267,47 @@ func (u AppointmentApp) GetAppointmentDetailsByMeetingId(user int, aId string) (
 	}
 
 	return &appointment, result.Error
+}
+
+func GetLastAppointment(userID uint, DB *gorm.DB) (models.Appointment, error) {
+	var appt models.Appointment
+	if err := DB.Where("user_id = ?", userID).Preload("Doctor").Order("created_at desc").First(&appt).Error; err != nil {
+		return appt, err
+	}
+	return appt, nil
+}
+
+func (u AppointmentApp) Dashboard(user int) *fiber.Map {
+	bloodPressure, _ := metric.GetLastBloodPressure(uint(user), u.DB)
+	weight, _ := metric.GetLastWeight(uint(user), u.DB)
+	height, _ := metric.GetLastHeight(uint(user), u.DB)
+	pulse, _ := metric.GetLastPulse(uint(user), u.DB)
+	bloodGlucose, _ := metric.GetLastBloodGlucose(uint(user), u.DB)
+	sleep, _ := metric.GetLastSleepPattern(uint(user), u.DB)
+
+	appt, _ := GetLastAppointment(uint(user), u.DB)
+	resource, _ := library.GetLastResource(u.DB)
+
+	exercises, _ := fitness.FetchThreeDayExercise(user, u.DB, u.OpenAiClient, time.Now())
+	meals, _ := fitness.FetchThreeDayMeals(user, u.DB, u.OpenAiClient, time.Now())
+
+	metrics := &fiber.Map{
+		"blood_pressure": bloodPressure,
+		"weight":         weight,
+		"pulse":          pulse,
+		"height":         height,
+		"blood_glucose":  bloodGlucose,
+		"sleep":          sleep,
+	}
+
+	return &fiber.Map{
+		"status": 200,
+		"data": &fiber.Map{
+			"metrics":     metrics,
+			"exercises":   exercises,
+			"meals":       meals,
+			"appointment": appt,
+			"resource":    resource,
+		},
+	}
 }

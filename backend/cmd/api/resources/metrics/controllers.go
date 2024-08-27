@@ -198,7 +198,7 @@ func CreateSleepPattern(c *fiber.Ctx, app MetricApp) error {
 			)
 	}
 
-	sleep, err := app.CreateSleepPattern(uint(userId), resource.Reading)
+	sleep, err := app.CreateSleepPattern(uint(userId), resource.StartHour, resource.EndHour)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"data": &fiber.Map{
@@ -406,7 +406,7 @@ func UpdateSleepPattern(c *fiber.Ctx, app MetricApp) error {
 			)
 	}
 
-	sleepPattern, err := app.UpdateSleepPattern(uint(userId), uint(sleepPatternId), resource.Reading)
+	sleepPattern, err := app.UpdateSleepPattern(uint(userId), uint(sleepPatternId), resource.StartHour, resource.EndHour)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"data": &fiber.Map{

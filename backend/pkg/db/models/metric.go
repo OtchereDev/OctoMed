@@ -43,7 +43,8 @@ type SleepPattern struct {
 	ID        uint      `json:"id,omitempty" gorm:"primary_key"`
 	User      User      `json:"-" validate:"-"`
 	UserID    uint      `json:"user_id"`
-	Reading   int       `json:"reading" validate:"required"`
+	StartHour int       `json:"start_hour"`
+	EndHour   int       `json:"end_hour" validate:"required"`
 	CreatedAt time.Time `json:"created_at,omitempty" gorm:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" gorm:"autoUpdateTime"`
 }

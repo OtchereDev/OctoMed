@@ -282,7 +282,7 @@ func generateExerciseForUser(userID int, db *gorm.DB, openAI *openai.Client) err
 
 }
 
-func fetchThreeDayMeals(userID int, db *gorm.DB, openai *openai.Client, startDate time.Time) ([]DailyMeals, error) {
+func FetchThreeDayMeals(userID int, db *gorm.DB, openai *openai.Client, startDate time.Time) ([]DailyMeals, error) {
 	var dailyMealPlans []DailyMeals
 
 	formattedDate := startDate.Format("2006-01-02")
@@ -315,7 +315,7 @@ func fetchThreeDayMeals(userID int, db *gorm.DB, openai *openai.Client, startDat
 	return dailyMealPlans, nil
 }
 
-func fetchThreeDayExercise(userID int, db *gorm.DB, openai *openai.Client, startDate time.Time) ([]DailyExercise, error) {
+func FetchThreeDayExercise(userID int, db *gorm.DB, openai *openai.Client, startDate time.Time) ([]DailyExercise, error) {
 	var dailyExercisePlans []DailyExercise
 
 	formattedDate := startDate.Format("2006-01-02")
@@ -351,13 +351,13 @@ func fetchThreeDayExercise(userID int, db *gorm.DB, openai *openai.Client, start
 }
 
 func (u FitnessApp) GenerateDiet(userID int, startDate time.Time) ([]DailyMeals, error) {
-	response, err := fetchThreeDayMeals(userID, u.DB, u.OpenAiClient, startDate)
+	response, err := FetchThreeDayMeals(userID, u.DB, u.OpenAiClient, startDate)
 
 	return response, err
 }
 
 func (u FitnessApp) GenerateExercise(userID int, startDate time.Time) ([]DailyExercise, error) {
-	response, err := fetchThreeDayExercise(userID, u.DB, u.OpenAiClient, startDate)
+	response, err := FetchThreeDayExercise(userID, u.DB, u.OpenAiClient, startDate)
 
 	return response, err
 }

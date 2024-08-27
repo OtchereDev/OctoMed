@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { EyeClose, EyeOpen } from './icons'
 
 export default function Input({
@@ -16,23 +16,26 @@ export default function Input({
   error?: string
   callback?: (val: string) => void
   disabled?: boolean
-  defaultValue?: string
+  defaultValue?: string | Date | number
 }) {
   const [value, setValue] = useState(defaultValue ?? '')
   const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLInputElement>(null)
 
   const togglePassword = () => {
     setIsOpen((iso) => !iso)
   }
+
   return (
     <div className="flex-1">
       <div
         className={`input-group flex flex-1 rounded-primary border border-[#667085] font-poppins ${
-          value?.length > 0 ? 'isFilled' : ''
+          (value as any)?.length > 0 ? 'isFilled' : ''
         } ${disabled ? 'bg-[#f1f2f5]' : ''} `}
       >
         <input
-          value={value}
+          ref={ref}
+          value={value as any}
           onChange={(e) => {
             setValue(e.target.value)
             callback?.(e.target.value)

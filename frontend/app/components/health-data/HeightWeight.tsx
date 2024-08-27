@@ -1,0 +1,115 @@
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '../ui/pagination'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../ui/table'
+
+export default function HeightWeight() {
+  return (
+    <div className="flex-1">
+      <div className="mb-5 flex gap-6">
+        <div className="flex items-center gap-2">
+          <div className="h-[7px] w-[7px] rounded-full bg-[#00C9BA]"></div>
+          <p className="font-montserrat font-semibold text-[#191919]">Weight</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="h-[7px] w-[7px] rounded-full bg-[#1282A2]"></div>
+          <p className="font-montserrat font-semibold text-[#191919]">Height</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="h-[7px] w-[7px] rounded-full bg-[#FFA000]"></div>
+          <p className="font-montserrat font-semibold text-[#191919]">BMI</p>
+        </div>
+      </div>
+      <div className="overflow-hidden !rounded-2xl border shadow">
+        <Table className="">
+          <TableCaption className="mt-0 border-t px-4 py-5 text-left">
+            <div className="flex items-center justify-between font-montserrat">
+              <p>Showing 1 of 5 entries</p>
+              <Pagination className="mx-0 w-auto rounded-md border">
+                <PaginationContent>
+                  <PaginationItem className="border-r">
+                    <PaginationPrevious href="#" />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink href="#">1</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem className="border-l">
+                    <PaginationNext href="#" />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          </TableCaption>
+          <TableHeader className="bg-gray-100">
+            <TableRow className="font-montserrat font-semibold">
+              <TableHead className="w-[118px]">Date</TableHead>
+              <TableHead>Weight(KG)</TableHead>
+              <TableHead>Height(M)</TableHead>
+              <TableHead>BMI(KG/M2)</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow className="font-montserrat">
+              <TableCell>Aug 1, 2024</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell className="flex gap-3">
+                <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">
+                  Edit
+                </button>
+                <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">
+                  Delete
+                </button>
+              </TableCell>
+            </TableRow>
+            <TableRow className="font-montserrat">
+              <TableCell>Aug 1, 2024</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell className="flex gap-3">
+                <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">
+                  Edit
+                </button>
+                <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">
+                  Delete
+                </button>
+              </TableCell>
+            </TableRow>
+            <TableRow className="font-montserrat">
+              <TableCell>Aug 1, 2024</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell>72</TableCell>
+              <TableCell className="flex gap-3">
+                <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">
+                  Edit
+                </button>
+                <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">
+                  Delete
+                </button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}

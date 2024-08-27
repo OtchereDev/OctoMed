@@ -132,7 +132,7 @@
 input[type='date']::-webkit-datetime-edit,
 input[type='date']::-webkit-inner-spin-button,
 input[type='date']::-webkit-clear-button {
-  color: transparent;
+  /* color: transparent; */
 }
 
 /* Style the date input field */

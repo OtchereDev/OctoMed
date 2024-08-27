@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { getFormError } from '~/lib/getFormError'
 import { action } from '~/routes/_dashboard.health-data'
+import { IHealthData } from '~/types/health-data'
 import Input from '../shared/Input'
 import { CirclePlus } from '../shared/icons'
 import {
@@ -18,9 +19,16 @@ import { toast } from '../ui/use-toast'
 
 const metrics = ['Pulse', 'Blood Pressure', 'Blood Glucose', 'Sleep Pattern', 'Height', 'Weight']
 
-export default function AddHealthData({ children }: { children: React.ReactNode }) {
+export default function EditHealthData({
+  children,
+  metric,
+  type,
+}: {
+  children: React.ReactNode
+  metric: IHealthData
+  type: string
+}) {
   const [open, setOpen] = useState(false)
-  const [selectedMetric, setSelectedMetric] = useState('create-pulse')
   const response = useActionData<typeof action>()
   const loading = useNavigation().state == 'submitting'
 
@@ -35,10 +43,11 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="!w-[723px] !rounded-[20px]">
         <DialogHeader>
-          <DialogTitle className="font-montserrat font-bold">Add Health Data</DialogTitle>
+          <DialogTitle className="font-montserrat font-bold">Edit Health Data</DialogTitle>
         </DialogHeader>
         <DialogDescription className="pt-8">
           <Form method="POST">
+            <input className="hidden" name="id" value={metric.id} />
             <div className="w-[300px]">
               <p className="mb-2 font-montserrat font-semibold text-[#4D5061]">Today's Date</p>
               <Input
@@ -51,12 +60,12 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
             </div>
             <div className="mt-10">
               <p className="mb-2 font-montserrat font-semibold text-[#4D5061]">Health Data Type</p>
-              <RadioGroup onValueChange={setSelectedMetric} name="form" defaultValue="create-pulse">
+              <RadioGroup defaultValue={`update-${type}`} disabled name="form">
                 <div className="grid grid-cols-4 gap-y-5">
                   {metrics.map((metric) => (
                     <div className="flex items-center gap-2" key={metric}>
                       <RadioGroupItem
-                        value={`create-${metric.replace(' ', '-').toLowerCase()}`}
+                        value={`update-${metric.replace(' ', '-').toLowerCase()}`}
                         id={metric}
                         className="h-5 w-5 rounded-full"
                       />
@@ -72,18 +81,20 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
               </RadioGroup>
             </div>
 
+            <input value={`update-${type}`} name="form" />
             <div className="mt-10">
               <p className="mb-2 font-montserrat font-semibold text-[#4D5061]">
                 Health Data Reading
               </p>
               <div className="mt-3 grid grid-cols-2 gap-4">
-                {selectedMetric == 'create-weight' && (
+                {`update-${type}` == 'update-weight' && (
                   <div className="flex w-full items-start gap-[15px]">
                     <Input
                       type="number"
                       label="Weight"
                       name="reading"
                       error={getFormError('global', response?.errors)}
+                      defaultValue={metric.reading}
                     />
                     <select
                       className="w-[98px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm text-[#191919] lg:py-[15px]"
@@ -94,13 +105,14 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                     </select>
                   </div>
                 )}
-                {selectedMetric == 'create-height' && (
+                {`update-${type}` == 'update-height' && (
                   <div className="flex w-full items-start gap-[15px]">
                     <Input
                       type="number"
                       label="Height"
                       name="reading"
                       error={getFormError('global', response?.errors)}
+                      defaultValue={metric.reading}
                     />
                     <select
                       className="w-[98px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm text-[#191919] lg:py-[15px]"
@@ -111,13 +123,14 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                     </select>
                   </div>
                 )}
-                {selectedMetric == 'create-pulse' && (
+                {`update-${type}` == 'update-pulse' && (
                   <div className="flex w-full items-start gap-[15px]">
                     <Input
                       type="number"
                       label="Pulse"
                       name="reading"
                       error={getFormError('global', response?.errors)}
+                      defaultValue={metric.reading}
                     />
                     <select
                       className="w-[98px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
@@ -130,7 +143,7 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                   </div>
                 )}
 
-                {selectedMetric == 'create-blood-pressure' && (
+                {`update-${type}` == 'update-blood-pressure' && (
                   <>
                     <div className="flex w-full items-start gap-[15px]">
                       <select
@@ -146,6 +159,7 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                         label="Diastolic Pressure (mmHg)"
                         name="diastolic"
                         error={getFormError('global', response?.errors)}
+                        defaultValue={metric.diastolic}
                       />
                     </div>
 
@@ -162,19 +176,20 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                         type="number"
                         label="Systolic Pressure (mmHg)"
                         name="systolic"
-                        //   error={getFormError('weight', response?.response?.errors)}
+                        defaultValue={metric.systolic}
                       />
                     </div>
                   </>
                 )}
 
-                {selectedMetric == 'create-blood-glucose' && (
+                {`update-${type}` == 'update-blood-glucose' && (
                   <div className="flex w-full items-start gap-[15px]">
                     <Input
                       type="number"
                       label="Blood Glucose"
                       name="reading"
                       error={getFormError('global', response?.errors)}
+                      defaultValue={metric.reading}
                     />
                     <select
                       className="w-[98px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
@@ -197,7 +212,7 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                 <div className="flex h-[24px] w-[24px] items-center justify-center rounded-full border-2 border-dashed">
                   <CirclePlus />
                 </div>
-                {loading ? 'Please wait...' : 'Add Health Data'}
+                {loading ? 'Please wait...' : 'Edit Health Data'}
               </button>
             </div>
           </Form>

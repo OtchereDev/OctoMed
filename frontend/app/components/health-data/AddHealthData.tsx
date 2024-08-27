@@ -186,6 +186,52 @@ export default function AddHealthData({ children }: { children: React.ReactNode 
                     </select>
                   </div>
                 )}
+
+                {selectedMetric == 'create-sleep-pattern' && (
+                  <>
+                    <div className="flex w-full items-start gap-[15px]">
+                      <select
+                        name="start_hour"
+                        className="w-[150px] rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                      >
+                        {new Array(23).fill(0).map((_, idx) => (
+                          <option className="font-semibold" value={idx}>
+                            {idx} {idx >= 12 ? 'PM' : 'AM'}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="w-[120px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                        disabled
+                      >
+                        <option className="font-semibold" value="">
+                          Start Hour
+                        </option>
+                      </select>
+                    </div>
+
+                    <div className="flex w-full items-start gap-[15px]">
+                      <select
+                        name="end_hour"
+                        className="w-[150px] rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                      >
+                        {new Array(23).fill(0).map((_, idx) => (
+                          <option className="font-semibold" value={idx}>
+                            {idx} {idx >= 12 ? 'PM' : 'AM'}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="w-[120px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                        disabled
+                      >
+                        <option className="font-semibold" value="">
+                          End Hour
+                        </option>
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

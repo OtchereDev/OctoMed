@@ -38,6 +38,9 @@ export default function EditHealthData({
       setOpen(false)
     }
   }, [response])
+
+  console.log(response)
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>{children}</DialogTrigger>
@@ -81,7 +84,7 @@ export default function EditHealthData({
               </RadioGroup>
             </div>
 
-            <input value={`update-${type}`} name="form" />
+            <input value={`update-${type}`} className="hidden" name="form" />
             <div className="mt-10">
               <p className="mb-2 font-montserrat font-semibold text-[#4D5061]">
                 Health Data Reading
@@ -141,6 +144,53 @@ export default function EditHealthData({
                       </option>
                     </select>
                   </div>
+                )}
+                {`update-${type}` == 'update-sleep-pattern' && (
+                  <>
+                    <div className="flex w-full items-start gap-[15px]">
+                      <select
+                        name="start_hour"
+                        defaultValue={metric.start_hour}
+                        className="w-[150px] rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                      >
+                        {new Array(23).fill(0).map((_, idx) => (
+                          <option className="font-semibold" value={idx}>
+                            {idx} {idx >= 12 ? 'PM' : 'AM'}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="w-[120px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                        disabled
+                      >
+                        <option className="font-semibold" value="">
+                          Start Hour
+                        </option>
+                      </select>
+                    </div>
+
+                    <div className="flex w-full items-start gap-[15px]">
+                      <select
+                        name="end_hour"
+                        defaultValue={metric.end_hour}
+                        className="w-[150px] rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                      >
+                        {new Array(23).fill(0).map((_, idx) => (
+                          <option className="font-semibold" value={idx}>
+                            {idx} {idx >= 12 ? 'PM' : 'AM'}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="w-[120px] appearance-none rounded-primary border border-[#667085] px-[15px] py-[18px] font-poppins text-sm font-semibold text-[#191919] lg:py-[15px]"
+                        disabled
+                      >
+                        <option className="font-semibold" value="">
+                          End Hour
+                        </option>
+                      </select>
+                    </div>
+                  </>
                 )}
 
                 {`update-${type}` == 'update-blood-pressure' && (

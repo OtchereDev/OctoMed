@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 
 export default function DateFilter() {
   const [selected, setSelected] = useState<Date | undefined>(new Date())
-  const [_, setSearchParams] = useSearchParams()
+  const [searchParam, setSearchParams] = useSearchParams()
 
   return (
     <Popover>
@@ -37,9 +37,8 @@ export default function DateFilter() {
           selected={selected}
           onSelect={(d) => {
             setSelected(d)
-            setSearchParams({
-              date: d?.toISOString()!,
-            })
+            searchParam.set('date', d?.toISOString()!)
+            setSearchParams(searchParam)
           }}
           disabled={(date) => date < new Date('1900-01-01')}
           initialFocus

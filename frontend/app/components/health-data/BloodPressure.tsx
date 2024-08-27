@@ -1,14 +1,9 @@
+import { useLoaderData } from '@remix-run/react'
+import dayjs from 'dayjs'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { loader } from '~/routes/_dashboard.health-data'
+import { IHealthData } from '~/types/health-data'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart'
-
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
-]
 
 const chartConfig = {
   desktop: {
@@ -22,6 +17,15 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function BloodPressure() {
+  const data = useLoaderData<typeof loader>()
+  const metrics = (data as any)?.response?.find((res: any) => res.metric == 'bloodpressure')
+    ?.data as IHealthData[]
+
+  const chartData = metrics.map((metric) => ({
+    month: dayjs(metric.created_at).format('DD MMM, 2024'),
+    systolic: metric.systolic,
+    diastolic: metric.diastolic,
+  }))
   return (
     <div className="flex-1 items-center justify-center rounded-[20px] border px-4 py-3 lg:px-[25px] lg:py-[20px]">
       <div className="mb-4">
@@ -48,19 +52,13 @@ export default function BloodPressure() {
       <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
         <BarChart accessibilityLayer data={chartData}>
           <CartesianGrid vertical={true} />
-          <XAxis
-            dataKey="month"
-            tickLine={false}
-            tickMargin={10}
-            axisLine={false}
-            tickFormatter={(value) => value.slice(0, 3)}
-          />
-          <YAxis dataKey="desktop" axisLine={false} tickLine={false} />
+          <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+          <YAxis dataKey="systolic" axisLine={false} tickLine={false} />
           <ChartTooltip content={<ChartTooltipContent />} />
-          <Bar barSize={'15'} dataKey="desktop" fill="#00C9BA" radius={4} />
+          <Bar barSize={'15'} dataKey="systolic" fill="#00C9BA" radius={4} />
           <Bar
             barSize={'15'}
-            dataKey="mobile"
+            dataKey="diastolic"
             fill="#FFA000"
             className="rounded-full rounded-bl-none rounded-tl-none"
             radius={4}

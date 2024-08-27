@@ -65,7 +65,10 @@ export default function SleepTable() {
                 <TableCell className="text-nowrap">
                   {dayjs(metric.created_at).format('MMM D, YYYY')}
                 </TableCell>
-                <TableCell>{metric.reading}</TableCell>
+                <TableCell>
+                  {metric.start_hour} {metric.start_hour >= 12 ? 'PM' : 'AM'} - {metric.end_hour}{' '}
+                  {metric.end_hour >= 12 ? 'PM' : 'AM'}
+                </TableCell>
                 <TableCell className="flex gap-3">
                   <EditHealthData metric={metric} type="sleep-pattern">
                     <button className="rounded-[8px] border border-[#7C8293] px-[14px] py-2 font-montserrat text-sm font-semibold">

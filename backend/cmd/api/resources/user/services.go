@@ -12,6 +12,7 @@ import (
 	"github.com/OtchereDev/ProjectAPI/pkg/db/models"
 	"github.com/OtchereDev/ProjectAPI/pkg/swagger"
 	"github.com/OtchereDev/ProjectAPI/pkg/utils"
+	"gorm.io/gorm"
 )
 
 func (u UserApp) CreateUser(data models.User) (*models.User, error) {
@@ -139,6 +140,11 @@ func (u UserApp) LoginUser(email string, password string) (string, *models.User,
 
 	db.Save(&user)
 
+	handleStreaking(db, user.ID)
+
+	db.Where("is_deleted = ?", false).Preload("Streak").
+		First(&user, "email = ?", strings.ToLower(email))
+
 	if err != nil {
 		return "", nil, errors.New("invalid credientials")
 	}
@@ -228,7 +234,6 @@ func (u UserApp) SkipOnboarding(userId int) error {
 	result := db.Save(&user)
 
 	return result.Error
-
 }
 
 func (u UserApp) OnboardingBiodata(userId int, data swagger.BioDataPayload) error {
@@ -386,4 +391,38 @@ func (u UserApp) OnboardingHealthDetails(userId int, payload swagger.HealthCondi
 	}
 
 	return nil
+}
+
+func checkAndUpdateStreak(db *gorm.DB, userID uint) {
+	var streak models.Streak
+	now := time.Now()
+
+	if err := db.Where("user_id = ? AND end_date IS NULL", userID).Last(&streak).Error; err != nil {
+		fmt.Println("No active streak found or error fetching streak", err)
+		return
+	}
+
+	duration := now.Sub(streak.StartDate)
+
+	if duration.Hours() > 24 {
+		endDate := now
+		db.Model(&streak).Update("end_date", endDate)
+
+		fmt.Println("Streak is broken and reset")
+	} else {
+		fmt.Println("Streak is still valid")
+	}
+}
+
+func handleStreaking(db *gorm.DB, userID uint) {
+	checkAndUpdateStreak(db, userID)
+
+	var streak models.Streak
+	if err := db.Where("user_id = ? AND end_date IS NULL", userID).First(&streak).Error; errors.Is(gorm.ErrRecordNotFound, err) {
+		newStreak := models.Streak{
+			UserID:    userID,
+			StartDate: time.Now(),
+		}
+		db.Create(&newStreak)
+	}
 }

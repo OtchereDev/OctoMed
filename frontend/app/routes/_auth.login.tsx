@@ -2,6 +2,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run
 import { Link, json, redirect } from '@remix-run/react'
 import LoginForm from '~/components/auth/LoginForm'
 import { LoginDTO } from '~/dto/user.dto'
+import { calculateStreak } from '~/lib/calculateStreak'
 import { IError, formatZodErrors } from '~/lib/formatZodError'
 import { preventLoggedInUser } from '~/lib/preventLoggedInUser'
 import { login } from '~/server/user.server'
@@ -41,6 +42,10 @@ export async function action({ request }: ActionFunctionArgs) {
       session.set('id', response.user.id)
       session.set('email', response.user.email)
       session.set('firstName', response.user.full_name.split(' ')[0])
+      session.set(
+        'streak',
+        `${calculateStreak(response.user.streak.start_date, response.user.streak.end_date)} days`
+      )
 
       if (!response.user.skip_onboarding) {
         if (!response.user.biodata_setup) {

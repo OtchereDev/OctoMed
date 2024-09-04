@@ -5,6 +5,7 @@ type SessionData = {
   email: string
   id: number
   firstName: string
+  streak: string
 }
 
 type SessionFlashData = {

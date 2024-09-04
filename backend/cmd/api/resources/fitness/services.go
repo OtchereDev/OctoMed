@@ -96,22 +96,26 @@ func generateThreeMealsForHealthConditionAndAllergies(userID int, db *gorm.DB, o
 		},
 	}
 
-	resp, err := openAI.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
-		Model:    openai.GPT4oMini,
-		Messages: messages,
-	})
-
-	if err != nil {
-		return mealPlans, err
-	}
-
-	contentStr := resp.Choices[0].Message.Content
-
-	// Parse the JSON string into a slice of Meal
 	var meals []models.Meal
-	err = json.Unmarshal([]byte(contentStr), &meals)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
+	for {
+
+		resp, err := openAI.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
+			Model:    openai.GPT4oMini,
+			Messages: messages,
+		})
+
+		if err != nil {
+			return mealPlans, err
+		}
+
+		contentStr := resp.Choices[0].Message.Content
+
+		// Parse the JSON string into a slice of Meal
+		err = json.Unmarshal([]byte(contentStr), &meals)
+
+		if err == nil {
+			break
+		}
 	}
 
 	// Convert meals to Diet
@@ -125,7 +129,7 @@ func generateThreeMealsForHealthConditionAndAllergies(userID int, db *gorm.DB, o
 			Protein:   int(meal.Protein),
 			Carbs:     int(meal.Carbs),
 			Fats:      int(meal.Fats),
-			Photo:     generateMealImage(prompt, meal.Name, openAI), // Generate meal image using DALL-E
+			Photo:     generateImage(prompt, meal.Name, openAI), // Generate meal image using DALL-E
 			CreatedAt: date,
 		}
 		db.Create(&mealPlan)
@@ -162,7 +166,7 @@ func generateMealsForUser(userID int, db *gorm.DB, openAI *openai.Client) error 
 
 }
 
-func generateMealImage(prompt, title string, client *openai.Client) string {
+func generateImage(prompt, title string, client *openai.Client) string {
 	// Use DALL-E to generate an image of the meal
 	reqUrl := openai.ImageRequest{
 		Prompt:         prompt,
@@ -206,7 +210,7 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 	messages := []openai.ChatCompletionMessage{
 		{
 			Role:    "system",
-			Content: "You are a exercise/gym expert who generates exercise plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{'name': 'Push-Up Routine',calories_lost: 3,'total_duration': 15,'instructions': [{'title': 'Warm-Up','content': 'Perform a light warm-up for 5 minutes to prepare your muscles.','minutes': 5,},{'title': 'Push-Ups','content': 'Perform push-ups for 3 sets of 10 repetitions.','minutes': 10,}]} No explanation, No other sentence and dont include ```json ``` tag , just the array of object, dont nest it in another object with any property such as meals, do this [{}]. Always use double quote of the properties and it should be a valid json, not lacking a missing closure",
+			Content: "You are a exercise/gym expert who generates exercise plans but optimize for based on their health conditions and allergies if they have any.The response should be a valid json string, having meal always having this structure 	{'name': 'Push-Up Routine', 'calories_lost': 3,'total_duration': 15,'instructions': [{'title': 'Warm-Up','content': 'Perform a light warm-up for 5 minutes to prepare your muscles.','minutes': 5,},{'title': 'Push-Ups','content': 'Perform push-ups for 3 sets of 10 repetitions.','minutes': 10,}]} No explanation, No other sentence and dont include ```json ``` tag , just the array of object, dont nest it in another object with any property such as meals, do this [{}]. Always use double quote of the properties and it should be a valid json, not lacking a missing closure",
 		},
 		{
 			Role: "user",
@@ -216,24 +220,26 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 			),
 		},
 	}
-
-	resp, err := openAI.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
-		Model:    openai.GPT4oMini,
-		Messages: messages,
-	})
-
-	if err != nil {
-		return exercisePlans, err
-	}
-
-	contentStr := resp.Choices[0].Message.Content
-	fmt.Println(contentStr)
-
-	// Parse the JSON string into a slice of Meal
 	var exercises []models.Exercise
-	err = json.Unmarshal([]byte(contentStr), &exercises)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
+
+	for {
+		resp, err := openAI.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
+			Model:    openai.GPT4oMini,
+			Messages: messages,
+		})
+
+		if err != nil {
+			return exercisePlans, err
+		}
+
+		contentStr := resp.Choices[0].Message.Content
+		fmt.Println(contentStr)
+
+		// Parse the JSON string into a slice of Meal
+		err = json.Unmarshal([]byte(contentStr), &exercises)
+		if err == nil {
+			break
+		}
 	}
 
 	// Convert meals to Diet
@@ -245,10 +251,11 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 			Name:          exercise.Name,
 			Instructions:  exercise.Instructions, // Generate meal image using DALL-E
 			TotalDuration: exercise.TotalDuration,
-			Photo:         generateMealImage(prompt, exercise.Name, openAI),
+			Photo:         generateImage(prompt, exercise.Name, openAI),
 			CreatedAt:     startDate,
 		}
 		db.Create(&mealPlan)
+		fmt.Println(mealPlan)
 		exercisePlans = append(exercisePlans, mealPlan)
 	}
 

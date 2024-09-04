@@ -1,5 +1,6 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node'
-import { Link, NavLink, Outlet, redirect } from '@remix-run/react'
+import { LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node'
+import { Link, NavLink, Outlet, redirect, useLoaderData } from '@remix-run/react'
+import { Flame } from 'lucide-react'
 import SideImage from '~/assets/images/dashboard-sidebar.svg'
 import Octavia from '~/assets/images/octavia.png'
 import NotificationSheet from '~/components/shared/NotificationSheet'
@@ -35,22 +36,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const session = await getSession(request.headers.get('Cookie'))
   const firstName = session.get('firstName')
+  const streak = session.get('streak')
 
   return json({
     firstName,
+    streak,
   })
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  // const session = await getSession(request.headers.get('Cookie'))
-
-  // session.unset('accessToken')
-  // session.unset('email')
-  // session.unset('id')
-  const form = await request.formData()
-  console.log('rvlahe:', form.get('rvlahe'))
-
-  return json({})
 }
 
 const links = [
@@ -98,6 +89,8 @@ export const meta: MetaFunction = () => [
 ]
 
 export default function DashboardLayout() {
+  const { streak } = useLoaderData<typeof loader>()
+  console.log('streak:', streak)
   return (
     <section className="h-screen max-h-screen w-full overflow-hidden lg:grid lg:grid-cols-[280px,auto]">
       <section className="hidden h-screen overflow-scroll lg:block">
@@ -139,6 +132,10 @@ export default function DashboardLayout() {
           </p>
 
           <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2 rounded-full border px-4 py-2 font-montserrat font-semibold text-[#efbd39]">
+              <Flame color="#efbd39" fill="#efbd39" />
+              {streak}
+            </div>
             <NotificationSheet>
               <Bell className="size-6 cursor-pointer text-gray-500" />
             </NotificationSheet>

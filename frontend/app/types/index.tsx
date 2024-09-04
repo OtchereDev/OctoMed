@@ -19,4 +19,8 @@ export interface IUser {
   is_deleted: boolean
   created_at: string
   updated_at: string
+  streak: {
+    end_date: string | null
+    start_date: string
+  }
 }

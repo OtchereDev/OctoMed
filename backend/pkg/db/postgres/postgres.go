@@ -95,6 +95,7 @@ func MigrateDB(db *gorm.DB) {
 		&models.Diet{},
 		&models.Exercise{},
 		&models.ExerciseInstruction{},
+		&models.Streak{},
 	)
 	healthinfo.MigrateHealthCondition(db)
 }

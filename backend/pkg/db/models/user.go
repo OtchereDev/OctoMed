@@ -21,6 +21,7 @@ type User struct {
 	Address            *Address          `json:"address"`
 	AddressID          *uint             `json:"address_id"`
 	LastLogin          time.Time         `json:"last_login,omitempty"`
+	Streak             Streak            `json:"streak"`
 	IsDeleted          bool              `json:"is_deleted" gorm:"default:false"`
 	CreatedAt          time.Time         `json:"created_at,omitempty" gorm:"autoCreateTime"`
 	UpdatedAt          time.Time         `json:"updated_at,omitempty" gorm:"autoUpdateTime"`

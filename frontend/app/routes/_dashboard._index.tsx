@@ -242,7 +242,7 @@ export default function Index() {
       <div className="mt-[50px]">
         <div className="flex items-center justify-between">
           <h1 className="font-montserrat font-semibold text-[#4D5061]">Diet And Exercise</h1>
-          <Link to={'/diet-and-exercise'}>
+          <Link to={'/diet-and-exercises'}>
             <button className="flex items-center gap-2 text-sm font-semibold text-[#1282A2]">
               See All <ArrowRight size={'20'} />
             </button>

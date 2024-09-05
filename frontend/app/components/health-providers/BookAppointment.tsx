@@ -126,7 +126,11 @@ export default function BookAppointment({
                       mode="single"
                       initialFocus
                       className=""
-                      disabled={(date) => date < new Date()}
+                      disabled={(date) => {
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0) // Set today's time to midnight
+                        return date < today
+                      }}
                     />
                   </div>
                 </div>

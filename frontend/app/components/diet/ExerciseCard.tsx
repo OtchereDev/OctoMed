@@ -34,7 +34,7 @@ export default function ExerciseCard({ exercise }: { exercise: IExercise }) {
             <p className="font-montserrat text-[10px] font-medium lg:text-base">{totalTime}mins</p>
           </div>
           <h3 className="mt-2 flex items-center font-montserrat font-bold lg:text-2xl">
-            -{exercise.calories_lost} Kcal <span className="ml-1 text-sm font-normal">Total</span>
+            -150 Kcal <span className="ml-1 text-sm font-normal">Total</span>
           </h3>
         </div>
         <Form method="POST" className="flex items-center gap-1 lg:gap-2">

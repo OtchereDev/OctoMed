@@ -233,13 +233,13 @@ func generateExerciseForHealthCondition(userID int, db *gorm.DB, openAI *openai.
 		}
 
 		contentStr := resp.Choices[0].Message.Content
-		fmt.Println(contentStr)
 
 		// Parse the JSON string into a slice of Meal
 		err = json.Unmarshal([]byte(contentStr), &exercises)
 		if err == nil {
 			break
 		}
+		fmt.Println(err.Error())
 	}
 
 	// Convert meals to Diet

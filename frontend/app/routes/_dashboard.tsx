@@ -92,7 +92,7 @@ export default function DashboardLayout() {
   const { streak } = useLoaderData<typeof loader>()
   console.log('streak:', streak)
   return (
-    <section className="h-screen max-h-screen w-full overflow-hidden lg:grid lg:grid-cols-[280px,auto]">
+    <section className="h-screen max-h-screen w-full lg:grid lg:grid-cols-[280px,auto] lg:overflow-hidden">
       <section className="hidden h-screen overflow-scroll lg:block">
         <aside className="relative hidden h-full w-[280px] flex-col border-r pb-[30px] lg:flex">
           <div className="relative flex items-center overflow-hidden px-6 pb-[20px] pt-[20px] text-white">
@@ -197,7 +197,7 @@ export default function DashboardLayout() {
       </section>
 
       <OctaviaModal>
-        <div className="absolute bottom-5 right-10 z-10 h-[55px] w-[55px] cursor-pointer overflow-hidden rounded-full border-2 border-primary bg-white lg:h-[85px] lg:w-[85px] lg:border-4">
+        <div className="absolute bottom-5 right-10 z-10 h-[55px] w-[55px] cursor-pointer rounded-full border-2 border-primary bg-white lg:h-[85px] lg:w-[85px] lg:overflow-hidden lg:border-4">
           <img src={Octavia} alt="octavia" className="h-full w-full" />
         </div>
       </OctaviaModal>

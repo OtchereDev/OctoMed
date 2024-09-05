@@ -50,7 +50,7 @@ export default function FitnessCard({ exercise }: { exercise: IExercise }) {
             <p className="line-clamp-1 text-lg font-semibold text-[#333]">{exercise.name}</p>
           </div>
           <p className="text-nowrap text-2xl font-semibold text-primary">
-            -{exercise.calories_lost} <span className="text-sm text-black">Kcal</span>
+            -{350} <span className="text-sm text-black">Kcal</span>
           </p>
         </div>
         <div className="flex flex-col divide-y">

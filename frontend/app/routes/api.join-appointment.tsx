@@ -11,7 +11,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { success, meeting } = await getMeetingLink(id, accessToken)
 
   if (success) {
-    return redirect(`/health-providers/video/${meeting}`)
+    return redirect(`/health-care-providers/video/${meeting}`)
   }
 
   return json({})

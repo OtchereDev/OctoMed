@@ -41,6 +41,7 @@ export default function useAgoraChat({
         rtm.addEventListener('message', (eventArgs: any) => {
           setMessages((curr) => [...curr, { content: eventArgs.message, sender: false }])
         })
+        console.log('Successfully sent')
       } catch (error) {
         console.log('Channel Join Error:', error)
       }
@@ -59,6 +60,7 @@ export default function useAgoraChat({
 
   async function sendMessage(message: string) {
     try {
+      await rtm.login()
       await rtm.publish(channel, message)
       setMessages((curr) => [...curr, { sender: true, content: message }])
     } catch (err) {

@@ -32,13 +32,19 @@ export default function VideoChat({
     <div className="border-t p-6 lg:flex-1 lg:border-l lg:border-t-0">
       <div className="flex h-[503px] flex-col font-montserrat">
         <div className="flex max-h-[90%] flex-1 flex-col gap-3 overflow-scroll">
-          {messages.map((message) =>
+          {messages.map((message, idx) =>
             message.sender ? (
-              <div className="ml-auto max-w-[284px] rounded-[12px] rounded-br-none bg-[#F5CB5C] px-4 py-[14px] text-sm">
+              <div
+                key={idx}
+                className="ml-auto max-w-[284px] rounded-[12px] rounded-br-none bg-[#F5CB5C] px-4 py-[14px] text-sm"
+              >
                 <p>{message.content}</p>
               </div>
             ) : (
-              <div className="max-w-[284px] rounded-[12px] rounded-bl-none bg-[#D0D5DD4D] px-4 py-[14px] text-sm">
+              <div
+                key={idx}
+                className="max-w-[284px] rounded-[12px] rounded-bl-none bg-[#D0D5DD4D] px-4 py-[14px] text-sm"
+              >
                 <p>{message.content}</p>
               </div>
             )

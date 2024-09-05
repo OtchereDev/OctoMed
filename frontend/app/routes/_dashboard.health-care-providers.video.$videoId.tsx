@@ -44,7 +44,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     const channel = params.videoId as string
-    const username = `user_${userId}`
+    const username = Date.now()
     const time = Math.floor(Date.now() / 1000) + 600
     const rtcToken = RtcTokenBuilder.buildTokenWithUid(
       APP_ID,
@@ -57,7 +57,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const rtmToken = RtmTokenBuilder.buildToken(
       APP_ID,
       CERTIFICATE,
-      username,
+      String(username),
       RtmRole.Rtm_User,
       time
     )
@@ -67,7 +67,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       appId: APP_ID,
       channel,
       rtmToken,
-      username,
+      username: String(username),
       appointment: response.data.appointment as IAppointment['appointments'][0],
     } as VideoBoxData
 
